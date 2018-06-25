@@ -4,10 +4,7 @@ git config --global push.default simple
 git config --global credential.helper store
 
 [git clone - source code download]
-git clone http://192.168.2.175:10080/cloud1lab/prozone_installer.git
-
-[binary download]
-scp -r root@175.195.163.11:/root/prozone/binary/ $HOME/prozone_installer/ansible/files/
+git clone https://github.com/longlg88/renewAutomation
 
 ### USAGE GUIDE FOR CLOUD BOOTSTRAP ###
 
