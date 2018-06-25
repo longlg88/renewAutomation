@@ -1,0 +1,63 @@
+[automation 내용]
+LINUX CentOS 7.0 기준 version
+LINUX Ubuntu 16.04 version 추가
+20170307 README 수정 
+20170406 README 수정
+
+[hosts 값 지정]
+hosts 에 hosts variable 추가
+
+ex)
+[test]
+xxx.xxx.xxx.xxx
+
+[ansible script download]
+git config --global user.name
+git config --global user.email
+git init
+git pull http://192.168.2.175:10080/cloud1lab/automation.git
+
+[binary download]
+./ansible_cfg_init.sh -p [automation directory]		ansible을 실행시킬 directory의 path를 지정
+
+[automation 사용]
+
+./new_run.sh -h								help
+./new_run.sh -H [host] command				host를 입력하고 command를 실행      
+ex) command 예
+	./new_run.sh -H [host]	init			initial 설정만 진행
+    ./new_run.sh -H [host]  cnodecreate     Compute node create
+    ./new_run.sh -H [host]  cnodedelete     Compute node delete
+    ./new_run.sh -H [host]  csvmgrrun       Volume manager run
+    ./new_run.sh -H [host]  dbdelete        Tibero6 delete in container
+    ./new_run.sh -H [host]  dbinstall       Tibero6 install & run in container
+    ./new_run.sh -H [host]  dbmanualdelete  Tibero6 manual delete
+    ./new_run.sh -H [host]  dbmanualinstall Tibero6 manual install
+    ./new_run.sh -H [host]  dbmanualrun     Tibero6 manual run
+    ./new_run.sh -H [host]  dockerdelete    Docker delete
+    ./new_run.sh -H [host]  iaasrun         IaaS binary run
+    ./new_run.sh -H [host]  lxcclean        Container initial
+    ./new_run.sh -H [host]  lxcinstall      LXC install
+    ./new_run.sh -H [host]  networksetting  Network NIC setting
+    ./new_run.sh -H [host]  pingexternal    Ping test external IP
+    ./new_run.sh -H [host]  pinginternal    Ping test internal IP
+    ./new_run.sh -H [host]  poinstall       PO7 install in docker
+    ./new_run.sh -H [host]  snodeadd        Storage node create
+    ./new_run.sh -H [host]  snodedelete     Storage node delete
+    ./new_run.sh -H [host]  zfsdelete       ZFS delete
+	./new_run.sh -H [host]  zfsinstall		ZFS install
+
+[automation execute sequence]
+networksetting
+pingexternal
+pinginternal
+init
+lxcinstall
+zfsinstall
+dbmanualinstall
+csvmgrrun
+poinstall
+iaasrun
+cnodecreate
+snodecreate
+

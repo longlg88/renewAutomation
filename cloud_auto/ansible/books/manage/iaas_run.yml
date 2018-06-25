@@ -1,0 +1,55 @@
+---
+- name: Init ansible home
+  hosts: '{{ hosts }}'
+ 
+- name: RUN IaaS run
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+    - "../../vars/po7_vars.yml"
+    - "../../vars/iaas_domain-config.yml"
+  environment:
+    PATH: "{{ jeus_home }}/bin:{{ jeus_home }}/lib:{{ ansi_path }}"
+    PROOBJECT_HOME: "{{ po_home }}"
+    TCA_MASTER_USER: "{{ TCA_MASTER_USER }}"
+    TCA_MASTER_PW: "{{ TCA_MASTER_PW }}"
+    TCA_MASTER_IP: "{{ TCA_MASTER_IP }}"
+    TCA_MASTER_SVC_PORT: "{{ TCA_MASTER_SVC_PORT }}"
+    TCA_MASTER_SSH_PORT: "{{ TCA_MASTER_SSH_PORT }}"
+    IMAGE_GATEWAY_USER: "{{ IMAGE_GATEWAY_USER }}"
+    IMAGE_GATEWAY_PW: "{{ IMAGE_GATEWAY_PW }}"
+    IMAGE_GATEWAY_IP: "{{ IMAGE_GATEWAY_IP }}"
+    IMAGE_GATEWAY_PORT: "{{ IMAGE_GATEWAY_PORT }}"
+    IMAGE_INNER_LOCATION: "{{ IMAGE_INNER_LOCATION }}"
+    IMAGE_INNER_AUTH: "{{ IMAGE_INNER_AUTH }}"
+    IMAGE_OUTER_LOCATION: "{{ IMAGE_OUTER_LOCATION }}"
+    SYS_AGENT_RUN: "{{ SYS_AGENT_RUN }}"
+    TCN_SDN_RUN: "{{ TCN_SDN_RUN }}"
+    VM_MNG_IP: "{{ VM_MNG_IP }}"
+    VM_INTERNAL_IP: "{{ VM_INTERNAL_IP }}"
+    VM_PORT: "{{ VM_PORT }}"
+    VM_NODE_USER: "{{ VM_NODE_USER }}"
+    VM_NODE_PASSWORD: "{{ VM_NODE_PASSWORD }}"
+    TCS_VM_HOME: "{{ TCS_VM_HOME }}"
+    ZPOOL_NAME: "{{ ZPOOL_NAME }}"
+    TCS_LSNR_PORT: "{{ TCS_LSNR_PORT }}"
+    TCS_RECV_PORT: "{{ TCS_RECV_PORT }}"
+    tenant_uuid: "{{ tenant_uuid }}"
+    project_uuid: "{{ project_uuid }}"
+    WEBCONSOLE_PROXY_SERVER_IP: "{{ WEBCONSOLE_PROXY_SERVER_IP }}"
+    WEBCONSOLE_PROXY_SERVER_PUBLIC_IP: "{{ WEBCONSOLE_PROXY_SERVER_PUBLIC_IP }}"
+    WEBCONSOLE_PROXY_SERVER_PORT: "{{ WEBCONSOLE_PROXY_SERVER_PORT }}"
+    WEBCONSOLE_PROXY_SERVER_USER: "{{ WEBCONSOLE_PROXY_SERVER_USER }}"
+    WEBCONSOLE_PROXY_SERVER_PASSWORD: "{{ WEBCONSOLE_PROXY_SERVER_PASSWORD }}"
+    WEBCONSOLE_MIN_PORT: "{{ WEBCONSOLE_MIN_PORT }}"
+    WEBCONSOLE_MAX_PORT: "{{ WEBCONSOLE_MAX_PORT }}"
+    CMDB_ENABLE: "{{ CMDB_ENABLE }}"
+    CMDB_IP: "{{ CMDB_IP }}"
+    TCNM_IP: "{{ TCNM_IP }}"
+    FAILOVER_ENABLE: "{{ FAILOVER_ENABLE }}"
+    IAAS_VERSION: "{{ IAAS_VERSION }}"
+    VM_NODE_IP: "{{ VM_NODE_IP }}"
+    VM_ENV: "{{ VM_ENV }}"
+
+  roles:
+    - iaas_run

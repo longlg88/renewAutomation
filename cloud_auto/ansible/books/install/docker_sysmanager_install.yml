@@ -1,0 +1,9 @@
+---
+- name: Install sysmanager using Docker
+  hosts: '{{ hosts }}'
+  remote_user: '{{ user }}'
+  vars_files:
+    - "../../vars/po7_vars.yml"
+    - "../../vars/sysmanager_domain-config.yml"
+  roles:
+    - docker_sysmanager_install

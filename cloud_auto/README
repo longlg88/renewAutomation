@@ -1,0 +1,70 @@
+git config --global user.name "[ name ]"
+git config --global user.email "[ email ]" -> gitlab email account
+git config --global push.default simple
+git config --global credential.helper store
+
+[git clone - source code download]
+git clone http://192.168.2.175:10080/cloud1lab/prozone_installer.git
+
+[binary download]
+scp -r root@175.195.163.11:/root/prozone/binary/ $HOME/prozone_installer/ansible/files/
+
+### USAGE GUIDE FOR CLOUD BOOTSTRAP ###
+
+## 0. Directory and file tree ##
+
+./[cloud_bootstrap_home]/ -- ansible/ -- books/
+                                      |- files/
+                                      |- roles/
+                                      |- ansible.cfg
+
+## 1. Basic usage ##
+
+./cloud_auto [module]
+
+
+# module list #
+
+./cloud_auto wol
+             install
+             host
+             playbook
+             ansible_host
+          
+You can search more detail decription of each module at below (Search by [MODULE: [module]])
+
+
+## MODULE: wol ##
+
+./cloud_auto wol [Mac-address]
+
+
+## MODULE: playbook ##
+
+Execute ansible playbook
+
+./cloud_auto playbook [host] [book_name]
+
+     - Execute ansible playbook
+     - host -> host name in ./ansible/hosts 
+     - book_name -> the name to execute book in ./ansible/books/ ~ [book_name].yml
+       ** The name of book files MUST NOT be duplicated in books directory
+
+
+## MOUDULE: ansible_host ##
+
+Generate 'hosts' file for ansible playbook
+
+./cloud_auto ansible_host
+
+
+## MODULE: install ##
+
+# module command list && descrition#
+
+./cloud_auto install init
+     - Install deb packages by apt program
+
+
+./cloud_auto install keygen
+     - Setting keygen in ansible hosts

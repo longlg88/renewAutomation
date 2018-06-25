@@ -1,0 +1,177 @@
+{
+  "dto":
+  	{
+    	"ciType":[{
+			"ciTypeId":"ASSET",
+			"pathId":"ASSET",
+			"action":"CREATE"
+			},{
+			"ciTypeId":"INTANGIBLE",
+			"pathId":"ASSET.INTANGIBLE",
+			"action":"CREATE"
+			},{
+			"ciTypeId":"MATERIAL",
+			"pathId":"ASSET.MATERIAL",
+			"action":"CREATE"
+			},{
+			"ciTypeId":"SERVICE",
+			"pathId":"ASSET.INTANGIBLE.SERVICE",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"SOFTWARE",
+			"pathId":"ASSET.INTANGIBLE.SOFTWARE",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"PEOPLE",
+			"pathId":"ASSET.INTANGIBLE.PEOPLE",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"USER",
+			"pathId":"ASSET.INTANGIBLE.PEOPLE.USER",
+			"action":"CREATE"
+			
+			},
+			{
+			"ciTypeId":"ORGANIZATION",
+			"pathId":"ASSET.INTANGIBLE.ORGANIZATION",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"PROJECT",
+			"pathId":"ASSET.INTANGIBLE.ORGANIZATION.DOMAIN.PROJECT",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"TENANT",
+			"pathId":"ASSET.INTANGIBLE.ORGANIZATION.DOMAIN",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"BUSSINESS",
+			"pathId":"ASSET.INTANGIBLE.BUSSINESS",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"HARDWARE",
+			"pathId":"ASSET.MATERIAL.HARDWARE",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"STORAGE",
+			"pathId":"ASSET.MATERIAL.HARDWARE.STORAGE",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"DOCUMENT",
+			"pathId":"ASSET.MATERIAL.DOCUMENT",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"OFFICESUPPLIES",
+			"pathId":"ASSET.MATERIAL.OFFICESUPPLIES",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"APPLICATION",
+			"pathId":"ASSET.INTANGIBLE.SOFTWARE.APPLICATION",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"SYSTEM_SW",
+			"pathId":"ASSET.INTANGIBLE.SOFTWARE.SYSTEM_SW",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"CLOUD_SERVICE",
+			"pathId":"ASSET.INTANGIBLE.SERVICE.CLOUD_SERVICE",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"SAAS",
+			"pathId":"ASSET.INTANGIBLE.SERVICE.CLOUD_SERVICE.SAAS",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"PAAS",
+			"pathId":"ASSET.INTANGIBLE.SERVICE.CLOUD_SERVICE.PAAS",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"IAAS",
+			"pathId":"ASSET.INTANGIBLE.SERVICE.CLOUD_SERVICE.IAAS",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"MIDDLEWARE",
+			"pathId":"ASSET.INTANGIBLE.SOFTWARE.SYSTEM_SW.MIDDLEWARE",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"PERFORMANCE_MANAGERMENT",
+			"pathId":"ASSET.INTANGIBLE.SOFTWARE.SYSTEM_SW.PERFORMANCE_MANAGERMENT",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"FRAMEWORK",
+			"pathId":"ASSET.INTANGIBLE.SOFTWARE.SYSTEM_SW.FRAMEWORK",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"ANALYSIS",
+			"pathId":"ASSET.INTANGIBLE.SOFTWARE.SYSTEM_SW.ANALYSIS",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"SERVER",
+			"pathId":"ASSET.MATERIAL.HARDWARE.SERVER",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"HOST",
+			"pathId":"ASSET.MATERIAL.HARDWARE.SERVER.HOST",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"INSTANCE",
+			"pathId":"ASSET.MATERIAL.HARDWARE.SERVER.INSTANCE",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"COMPONENT",
+			"pathId":"ASSET.MATERIAL.HARDWARE.COMPONENT",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"NETWORK_EQUIP",
+			"pathId":"ASSET.MATERIAL.HARDWARE.NETWORK_EQUIP",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"ROUTER",
+			"pathId":"ASSET.MATERIAL.HARDWARE.NETWORK_EQUIP.ROUTER",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"SWITCH",
+			"pathId":"ASSET.MATERIAL.HARDWARE.NETWORK_EQUIP.SWITCH",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"DISK",
+			"pathId":"ASSET.MATERIAL.HARDWARE.COMPONENT.DISK",
+			"action":"CREATE"
+			
+			},{
+			"ciTypeId":"MEMORY",
+			"pathId":"ASSET.MATERIAL.HARDWARE.COMPONENT.MEMORY",
+			"action":"CREATE"
+			
+			}
+
+                 ]
+  	
+ 	}
+}

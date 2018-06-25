@@ -1,0 +1,8 @@
+---
+
+- name: Apply initial configuration to all nodes
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+  roles:
+    - init

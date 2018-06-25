@@ -1,0 +1,2 @@
+{"header":{"responseCode":"200"},"dto":{"result":{"type":"HostCreate","status":"Success","message":"Success","uuid":"149aee2c"}}}@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+{"header":{"responseCode":"200"},"dto":{"result":{"type":"ComputeNodeCreate","status":"Success","message":"Success","uuid":"149aee2c"}}}@@@@@@@@@@@@@@@@@@@@@@@@@@@@

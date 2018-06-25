@@ -1,0 +1,24 @@
+---
+- name: Copy docker install shell on ubuntu
+  copy: src=../../../files/docker_install_ubuntu.sh dest=/{{ user }}/automation/initial/docker_install.sh owner={{ user }} mode=0755
+
+- name: Execute docker install shell
+  shell: /{{ user }}/automation/initial/docker_install.sh
+
+- name: make directory recursive about docker image
+  file: path=/{{ user }}/automation/docker_image state=directory
+
+- name: make directory recursive about docker image(cont.)
+  file: path=/{{ user }}/automation/docker_image/iaas state=directory
+
+- name: copy iaas docker image
+  copy: src=../../../files/binary/docker_iaas_master_install.tar dest=/{{ user }}/automation/docker_image/iaas/ mode=0755
+
+- name: Execute docker load image
+  shell: docker load < /root/automation/docker_image/iaas/docker_iaas_master_install.tar
+
+#- name: copy push iaas docker image shell
+#  copy: src=../../../files/docker_iaas_install.sh dest=/{{ user }}/automation/docker_image/iaas/ mode=0755
+
+#- name: Execute iaas docker image shell
+#  copy: /{{ user }}/automation/docker_image/iaas/docker_iaas_install.sh

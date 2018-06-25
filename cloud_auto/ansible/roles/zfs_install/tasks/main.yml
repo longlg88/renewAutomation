@@ -1,0 +1,40 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: Make recursive directory
+  file: path={{ user_home.stdout }}/automation/{{ item }} state=directory
+  with_items:
+    - storage
+
+- name: Install zfs packages
+  apt:
+    name: zfsutils-linux
+    state: present
+  when: ansible_distribution == "Ubuntu"
+
+- name: Copy zfs setting shell
+  copy: src=../../../files/zfs_setting.sh dest={{ user_home.stdout }}/automation/storage/ mode=0755
+  when: ansible_distribution == "Ubuntu"
+
+- name: Execute zfs setting shell
+  shell: "{{ user_home.stdout }}/automation/storage/zfs_setting.sh"
+  when: ansible_distribution == "Ubuntu"
+
+
+- name: Copy zfs shell
+  copy: src=../../../files/zpool_set.sh dest={{ user_home.stdout }}/automation/storage/zpool_set.sh mode=0755
+  when: ansible_distribution == "Ubuntu"
+
+- name: Execute zfs shell
+  shell: "{{ user_home.stdout }}/automation/storage/zpool_set.sh "
+  when: ansible_distribution == "Ubuntu"
+
+- name: Copy sysparams shell
+  copy: src=../../../files/sysparams.sh dest={{ user_home.stdout }}/automation/storage/sysparams.sh mode=0755
+  when: ansible_distribution == "Ubuntu"
+
+- name: Execute sysparams shell
+  shell: "{{ user_home.stdout }}/automation/storage/sysparams.sh"
+  when: ansible_distribution == "Ubuntu"

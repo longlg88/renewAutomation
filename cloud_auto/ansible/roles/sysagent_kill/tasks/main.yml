@@ -1,0 +1,9 @@
+---
+- name: copy pkill sysmanager agent
+  copy: src=../../../files/sys_agent_kill.sh dest=/{{ user }}/sys_agent/ owner={{ user }} mode=0755
+
+- name: run pkill sysmanager agent shell
+  shell: "nohup /{{ user }}/sys_agent/sys_agent_kill.sh" 
+
+- name: sed bashrc 
+  shell: sed -i -e '102,105 d' /root/.bashrc

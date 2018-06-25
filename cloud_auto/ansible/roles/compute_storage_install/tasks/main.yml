@@ -1,0 +1,25 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }'"
+  register: user_home
+
+- name: Make compute & storage packages directory
+  file: path={{ user_home.stdout }}/automation/{{ item }} state=directory
+  with_items:
+    - cs_packages
+  when: aptInstall == "no"
+
+- name: Copy all deb files
+  copy: src=../../../files/binary/cs_packages/all dest={{ user_home.stdout }}/automation/cs_packages/
+  when: aptInstall == "no"
+
+- name: Execute install shell
+  shell: "{{ user_home.stdout }}/automation/cs_packages/all/install.sh"
+  when: aptInstall == "no"
+
+- name: Copy install compute & storage packages
+  copy: src=../../../files/cs_host_package_install.sh dest={{ user_home.stdout }}/automation/initial/
+  when: aptInstall == "yes"
+
+- name: Execute install shell
+  shell: "{{ user_home.stdout }}/automation/initial/cs_host_package_install.sh"

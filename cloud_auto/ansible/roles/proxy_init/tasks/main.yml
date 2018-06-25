@@ -1,0 +1,28 @@
+---
+
+- name: apt get download dhcp server package
+  apt:
+    name: "{{ item }}"
+  when: ansible_distribution == "Ubuntu"
+  register: utpkg_result
+  with_items:
+    - "isc-dhcp-server"
+    - "tftpd-hpa"
+    - "apache2"
+    - "nfs-kernel-server"
+
+- name: copy OS Install configuration(dhcpd.conf)
+  copy: src=../../../files/dhcpd.conf dest=/etc/dhcp/dhcpd.conf mode=0755
+
+- name: copy OS Install configuration(tftp-hpa)
+  copy: src=../../../files/tftpd-hpa dest=/etc/default/tftpd-hpa
+
+- name: copy OS Install configuration(tftpboot)
+  copy: src=../../../files/{{ item }} dest=/var/lib/
+  with_items:
+    - "tftpboot"
+
+- name: copy OS Install configuration(auto_script)
+  copy: src=../../../files/{{ item }} dest=/var/www/html/
+  with_items:
+    - "auto_script"

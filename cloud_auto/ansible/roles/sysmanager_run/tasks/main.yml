@@ -1,0 +1,51 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: copy po7 war
+  copy:
+        src=../../../files/binary/sysmanager_po7.war dest={{ domaindir }}/.applications/{{ po7_runtime_binary }} mode=0755
+
+- name: mkdir po7 directory
+  file: path={{ user_home.stdout }}/{{ item }} state=directory
+  with_items:
+    - po7
+    - cmd
+
+- name: untar proobject tar
+  unarchive:
+    extra_opts="--strip-components=1"
+    src=../../../files/binary/sysmanager_proobject7.tar.gz
+    dest={{ user_home.stdout }}/proobject7/
+
+#- name: Mapping iaas master ip in servicegroup.xml
+#  replace:
+#    dest: "/{{ user }}/proobject7/application/servicegroup/sysmanager/config/servicegroup.xml"
+#    regexp: "{{ item.exp }}"
+#    replace: "{{ item.rep }}"
+#  with_items:
+#    - { exp: '@@master_ip@@', rep: '{{ master_ip }}' }
+
+- name: Create po7run.sh
+  copy:
+    src=../../../files/sysmanager_run.sh dest={{ user_home.stdout }}/cmd/ mode=0775
+
+- name: Create po7down.sh
+  copy:
+    src=../../../files/sysmanager_down.sh dest={{ user_home.stdout }}/cmd/ mode=0775
+
+- name: Replace po7run.sh
+  replace:
+    dest: "{{ user_home.stdout }}/cmd/sysmanager_run.sh"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@DOMAINNAME@@', rep: '{{ domain }}' }
+    - { exp: '@@USERNAME@@', rep: '{{ jeus_username }}' }
+    - { exp: '@@PASSWORDCMD@@', rep: '{{ jeus_password_cmd }}' }
+    - { exp: '@@BASE-PORT@@', rep: '{{ jeus_port }}' }
+    - { exp: '@@PROOBJECT_SYSMANAGER_SERVER_NAME@@', rep: '{{ po7_sysmanager_server_name }}' }
+
+- name: jeus run
+  shell: "{{ user_home.stdout }}/cmd/sysmanager_run.sh"

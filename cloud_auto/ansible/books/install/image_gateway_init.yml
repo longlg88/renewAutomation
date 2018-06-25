@@ -1,0 +1,9 @@
+---
+
+- name: Setting image gateway host
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+
+  roles:
+    - image_gateway_init

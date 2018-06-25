@@ -1,0 +1,9 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: Execute clean_interfaces.py
+  command: ./clean_interfaces.py
+  args:
+    chdir: "{{ user_home.stdout }}/cloud_auto"

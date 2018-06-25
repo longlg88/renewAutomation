@@ -1,0 +1,22 @@
+---
+#- name: Install packagae expect
+#  apt: name=expect state=present
+
+#- name: install init pkg From Ubuntu
+#  apt:
+#    name: '{{ item }}'
+#  when: ansible_distribution == "Ubuntu"
+#  register: utpkg_result
+#  with_items:
+#    - "gcc"
+#    - "g++"
+#    - "libstdc++5"
+#    - "libaio1"
+#    - "libaio-dev"
+
+- name: Copy install shell
+  copy: src=../../../files/webtob_install.sh dest={{ user_home.stdout }}/automation/portal_web/ mode=0755
+
+- name: Execute shell
+  shell: "{{ user_home.stdout }}/automation/portal_web/webtob_install.sh"
+

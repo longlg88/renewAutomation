@@ -1,0 +1,20 @@
+
+---
+- name: Init ansible home
+  hosts: '{{ hosts }}'
+
+- name: Install NFT Master install
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+    - "../../vars/tcnm_po7_vars.yml"
+    - "../../vars/nft_master_domain-config.yml"
+    - "../../vars/osarch_vars.yml"
+    - "../../vars/db_config.yml"
+
+  environment:
+    PATH: "{{ jeus_home }}/bin:{{ jeus_home }}/lib:{{ ansi_path }}"
+    PROOBJECT_HOME: "{{ po_home }}"
+
+  roles:
+    - nft_master_install

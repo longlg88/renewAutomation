@@ -1,0 +1,31 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: install init pkg From Ubuntu
+  apt:
+    name: '{{ item }}'
+  when: ansible_distribution == "Ubuntu"
+  register: utpkg_result
+  with_items:
+    - "gcc"
+    - "g++"
+    - "libstdc++5"
+    - "libaio1"
+    - "libaio-dev"
+
+- name: install init pkg from CentOS
+  yum:
+    name: "{{ item }}"
+  when: ansible_distribution == "CentOS"
+  register: copkg_result
+  with_items:
+    - "gcc"
+    - "gcc-c++"
+    - "compat-libstdc++-33"
+    - "libaio"
+    - "libaio-devel"
+
+- name: touch set_dbenv.sh
+  shell: "touch {{ user_home.stdout }}/set_dbenv.sh"

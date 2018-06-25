@@ -1,0 +1,7 @@
+---
+
+- name: stop tibero
+  shell: tbdown
+
+- name: Delete tibero6 directory
+  file: path=/root/tibero6 state=absent

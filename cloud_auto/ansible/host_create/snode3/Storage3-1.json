@@ -1,0 +1,24 @@
+{
+    "dto":{
+        "hostName":"Storage3-1",
+        "hostIp":"172.31.30.1",
+        "totalCpu":16,
+        "totalMemory":32000,
+        "totalDisk":300,
+        "pooledDisk":300,
+        "hostType":"General",
+        "hypervisorType":"LXC",
+        "cpuArch":"x86_64",
+        "availabilityZone":"",
+        "status":"Running",
+        "hostPmac":"fe:a7:c1:0f",
+        "frontendPort":"eno1",
+        "backendPort":"eno1",
+        "managementPort":"eno1",
+        "switchDpid":2038033768499431169,
+        "switchPort":15,
+        "accessName":"root",
+        "accessAuth":"tmax@23",
+        "active":true
+    }
+}

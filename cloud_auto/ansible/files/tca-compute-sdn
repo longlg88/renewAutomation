@@ -1,0 +1,153 @@
+#!/bin/bash
+
+# init script for compute node with sdn.
+# by jungsub_shin
+
+### BEGIN INIT INFO
+# Provides:          tca-compute
+# Required-Start:	 $network $remote_fs
+# Required-Stop:     $network $remote_fs
+# Default-Start:	 2 3 4 5
+# Default-Stop:      0 1 6
+### END INIT INFO
+
+# Directories
+tca_agent_block_home=@@user_home@@/tca_agent # @@user_home@@ replaced by ansible
+tca_agent_mount_home=/mnt/tca_agent
+tca_agent_mem_home=/tmp/tca_agent
+
+tca_agent_global_mount=$tca_agent_mount_home/global_mount
+tca_agent_global_lock=$tca_agent_mem_home/global_lock
+tca_rendezvous_result=$tca_agent_mem_home/rendezvous_result
+
+tca_container_lock=$tca_agent_mem_home/container_lock
+tca_container_config=$tca_agent_block_home/container_config
+tca_container_log=$tca_agent_block_home/container_log
+tca_container_console=$tca_agent_block_home/container_console
+tca_container_root_dir=$tca_agent_block_home/container_root_dir
+tca_container_rw_dir=$tca_agent_block_home/container_rw_dir
+tca_container_rw_tar=$tca_agent_block_home/container_rw_tar
+tca_container_rw_list=$tca_agent_block_home/container_rw_list
+tca_container_quota=$tca_agent_block_home/container_quota
+
+tca_image_layer_lock=$tca_agent_mem_home/image_layer_lock
+tca_image_layer_dir=$tca_agent_block_home/image_layer_dir
+tca_image_layer_tar=$tca_agent_block_home/image_layer_tar
+tca_image_layer_ref=$tca_agent_block_home/image_layer_ref
+
+tca_network_lock=$tca_agent_mem_home/network_lock
+tca_network_ref=$tca_agent_mem_home/network_ref
+tca_network_config=$tca_agent_block_home/network_config
+
+lxc_home=/var/lib/lxc
+
+# Functions
+init_directories () {
+	mkdir -p $tca_agent_global_mount
+	mkdir -p $tca_agent_global_lock
+	mkdir -p $tca_rendezvous_result
+
+	mkdir -p $tca_container_lock
+	mkdir -p $tca_container_config
+	mkdir -p $tca_container_log
+	mkdir -p $tca_container_console
+	mkdir -p $tca_container_root_dir
+	mkdir -p $tca_container_rw_dir
+	mkdir -p $tca_container_rw_tar
+	mkdir -p $tca_container_rw_list
+	mkdir -p $tca_container_quota
+
+	mkdir -p $tca_image_layer_lock
+	mkdir -p $tca_image_layer_dir
+	mkdir -p $tca_image_layer_tar
+	mkdir -p $tca_image_layer_ref
+
+	mkdir -p $tca_network_lock
+	mkdir -p $tca_network_ref
+	mkdir -p $tca_network_config
+}
+
+init_network () {
+	modprobe 8021q
+	modprobe br_netfilter
+	echo 1 > /proc/sys/net/bridge/bridge-nf-filter-vlan-tagged
+	echo 1 > /proc/sys/net/bridge/bridge-nf-call-arptables
+
+	arptables -F
+	arptables -P FORWARD DROP
+	arptables -I FORWARD -i eno1 ! --src-mac 12:34:56:78:9a:bc -j DROP
+}
+
+clean_container () {
+	rm -rf $tca_container_config/*
+	rm -rf $tca_container_log/*
+	rm -rf $tca_container_console/*
+	rm -rf $tca_container_root_dir/*
+	rm -rf $tca_container_rw_dir/*
+	rm -rf $tca_container_rw_tar/*
+	rm -rf $tca_container_rw_list/*
+	rm -rf $tca_container_quota/*
+	rm -rf $lxc_home/*
+}
+
+umount_cont_dirs () {
+	# Unmount AUFS
+	containers_root=$(ls $tca_container_root_dir)
+	for root in $containers_root; do
+		umount $tca_container_root_dir/$root
+	done
+
+	# Unmount NFS with container's rw for the network fails.
+	containers_rw=$(ls $tca_container_rw_dir)
+	for rw in $containers_rw; do
+		umount -l $tca_container_rw_dir/$rw
+	done
+}
+
+umount_nfs () {
+	nfs_mount=$(ls $tca_nfs_mount)
+	for mount in $nfs_mount; do
+		umount -l $tca_nfs_mount/$mount
+	done
+}
+
+umount_ceph () {
+	ceph_mount=$(ls $tca_ceph_mount)
+	for mount in $ceph_mount; do
+		umount -l $tca_ceph_mount/$mount
+	done
+}
+
+configure_network (){
+        # setting bridge and vlan for container & vm
+        scripts=`ls $tca_network_config`
+        for sh in $scripts
+        do
+                /bin/bash $tca_network_config/$sh
+        done
+}
+
+# Run
+case "$1" in
+  start)
+	init_directories
+	init_network
+	;;
+  restart|reload|force-reload)
+	echo "Error: argument '$1' not supported" >&2
+	echo "Usage: $0 [start|stop]" >&2
+	exit 3
+	;;
+  stop|"")
+	umount_cont_dirs
+	umount_nfs
+	umount_ceph
+	clean_container
+	;;
+  *)
+	echo "Usage: $0 [start|stop]" >&2
+	exit 3
+	;;
+esac
+
+:

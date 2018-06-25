@@ -1,0 +1,36 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: Copy image_update.sql
+  copy: src=../../../files/sql_script/image_update.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/ mode=0755
+
+- name: Image update
+  shell: "tbsql {{ iaas_db_user }}/{{ iaas_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/image_update.sql"
+
+
+## insert ssvr image uuid into IaaSconfig
+
+- name: Get image list
+  shell: "curl -X GET 'http://{{ master_ip }}:8080/imp/master/tenants/0739ec6d/projects/01bea881/ImageList?&imageType=All&state=All&serviceType=1&imageClassification=Container&sort=timeUp&offset=1&limit=10' > {{ user_home.stdout }}/automation/image_import/get_image.json"
+
+- name: copy get_image.py
+  copy: src=../../../files/get_image.py dest={{ user_home.stdout }}/automation/image_import/ mode=0755
+
+- name: run get_image.py
+  shell: "{{ user_home.stdout }}/automation/image_import/get_image.py"
+
+- name: parsing ssvr image uuid
+  shell: "grep -r '{{ IMAGE_NAME_1 }}' {{ user_home.stdout }}/automation/image_import/get_uuid | sed -e 's/{{ IMAGE_NAME_1 }}://'" 
+  register: image_uuid
+
+- name: insert ssvr_image_uuid into IaaSconfig
+  shell: "echo SSVR_IMG_UUID={{ image_uuid.stdout }} >> {{ user_home.stdout }}/po7/IaaSMaster/config/IaaSconfig"
+
+- name: run po7down.sh
+  shell: "{{ user_home.stdout }}/cmd/po7down.sh"
+  ignore_errors: yes
+
+- name: run po7run.sh
+  shell: "{{ user_home.stdout }}/cmd/po7run.sh"

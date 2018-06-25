@@ -1,0 +1,16 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }'"
+  register: user_home
+
+- name: Copy make user sql
+  copy: src=../../../files/gen_csvmgrmakeusersql.sh dest={{ user_home.stdout }}/automation/db_files/ mode=0755
+
+- name: Setting make_user.sql
+  shell: "{{ user_home.stdout }}/automation/db_files/gen_csvmgrmakeusersql.sh"
+
+- name: Create volume manager user
+  shell: "tbsql sys/tibero @{{ user_home.stdout }}/automation/db_files/sql_script/make_csvmgruser.sql"
+
+- name: Execute volume manager sql
+  shell: "tbsql {{ CSVMGR_META_DB_USER }}/{{ CSVMGR_META_DB_PWD }} @{{ user_home.stdout }}/automation/db_files/sql_script/csvmgr_schema.sql"

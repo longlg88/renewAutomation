@@ -1,0 +1,52 @@
+---
+- name: Init ansible home
+  hosts: '{{ hosts }}'
+
+- name: Run IaaS container
+  hosts: '{{ hosts }}'
+  remote_user: '{{ user }}'
+  vars_files:
+    - "../../vars/external_vars.yml"
+    - "../../vars/iaas_domain-config.yml"
+    - "../../vars/docker_run_iaas.yml"
+
+  environment:
+    MasterUser: "{{ MasterUser }}"
+    MasterPassword: "{{ MasterPassword }}"
+    MasterIp: "{{ MasterIp }}"
+    MasterSvcPort: "{{ MasterSvcPort }}"
+    MasterSshPort: "{{ MasterSshPort }}"
+    imageGatewayUser: "{{ imageGatewayUser }}"
+    imageGatewayPW: "{{ imageGatewayPW }}"
+    imageGatewayIP: "{{ imageGatewayIP }}"
+    imageGatewayPort: "{{ imageGatewayPort }}"
+    imageInnerLocation: "{{ imageInnerLocation }}"
+    imageInnerAuth: "{{ imageInnerAuth }}"
+    SysAgent: "{{ SysAgent }}"
+    NetworkSdn: "{{ NetworkSdn }}"
+    VmMngIp: "{{ VmMngIp }}"
+    VmInternalIp: "{{ VmInternalIp }}"
+    VmPort: "{{ VmPort }}"
+    VmNodeUser: "{{ VmNodeUser }}"
+    VmNodePassword: "{{ VmNodePassword }}"
+    TCS_VM_HOME: "{{ TCS_VM_HOME }}"
+    ZpoolName: "{{ ZpoolName }}"
+    TCS_LSNR_PORT: "{{ TCS_LSNR_PORT }}"
+    TCS_RECV_PORT: "{{ TCS_RECV_PORT }}"
+    tenant_uuid: "{{ tenant_uuid }}"
+    project_uuid: "{{ project_uuid }}"
+    app_name: "{{ app_name }}"
+    outbound_port1: "{{ outbound_port1 }}"
+    outbound_port2: "{{ outbound_port2 }}"
+    webadmin_port: "{{ webadmin_port }}"
+    http_port: "{{ http_port }}"
+    po7_path: "{{ po7_path }}"
+    po7_runtime_war: "{{ po7_runtime_war }}"
+    master_name: "{{ master_name }}"
+    db_ip: "{{ db_ip }}"
+    db_port: "{{ db_port }}"
+    db_user: "{{ db_user }}"
+    db_password: "{{ db_password }}"
+
+  roles:
+    - docker_iaas_master_run

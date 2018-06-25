@@ -1,0 +1,8 @@
+---
+## ansible vars
+java_home: "/usr/java8_64"
+jeus_home: "{{ ansible_env.HOME }}/jeus8"
+proobject_home: "{{ ansible_env.HOME }}/proobject7"
+webtobdir: "{{ ansible_env.HOME }}/webtob"
+java_version: "java8_64"
+webtob_name: "WEBTOB5_0_SP0_Fix1_LinuxK2_6_x64.bin"

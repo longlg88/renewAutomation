@@ -1,0 +1,9 @@
+---
+
+- name: Setting compute
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+
+  roles:
+    - compute_init

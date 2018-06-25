@@ -1,0 +1,10 @@
+---
+
+- name: Export db schema
+  shell: tbexport username=sys password=tibero sid=tibero file=export.dat full=y grant=y index=y constraint=y
+
+- name: fetch export dat
+  fetch: src=/{{ user }}/export.dat dest=/{{ user }}/automation/170331/roles/db_import/files/ flat=yes
+
+- name: Remove export.dat
+  shell: rm -f /{{ user }}/export.dat 

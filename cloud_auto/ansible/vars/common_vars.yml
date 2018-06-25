@@ -1,0 +1,121 @@
+---
+############################################################
+# common_vars.yml use common variable for every script
+############################################################
+
+## Initial value
+TESTING: "ON"
+all_in_infra: "OFF"
+master_management_ip: ""
+iaas_outbound_port: 6777
+sysmanager_outbound_port: 6776
+nft_outbound_port: ""
+cds_outbound_port: 6779
+locale: "ko_KR.UTF-8"
+aptInstall: "yes"
+
+user_tenant_uuid: 0739ec6d
+admin_tenant_uuid: 11111111
+project_uuid: 01bea881
+
+## ansible vars
+ansi_path: "{{ (ansible_env|default({})).PATH|default('') }}"
+
+## docker vars
+master_ip: 
+image_registry: ##image outer node ip
+portal_ip: 
+
+## Portal web
+portal_web_port_1: 80
+portal_web_port_2: 9999
+portal_server_port_1: 8080
+portal_server_port_2: 9736
+
+## Sysmanager vars
+TMAX_SYSMANAGER_PORT: 1234
+TMAX_SYSMANAGER_IP: 
+TMAX_SYSMANAGER_AGENT_PORT: 12345
+TMAX_SYSMANAGER_AGENT_ANYMINER_PORT: 1413
+TMAX_SYSMANAGER_AGENT_ANYMINER_IP:
+TMAX_SYSMANAGER_AGENT_CONTAINER_RW_LAYER_DIRECTORY: "/root/tca_agent/container_rw_dir/"
+TMAX_SYSMANAGER_AGENT_HOST_INTERFACE: ""
+TMAX_SYSMANAGER_AGENT_REPORT_LOCATION: "sysmanager"
+TMAX_SYSMANAGER_AGENT_QEMU_IMAGE_FILE_DIRECTORY: "/root/tca_agent/vm_rw_dir/"
+
+## Image name
+IMAGE_NAME_1: cloud_tcs_ssvr
+IMAGE_NAME_2: cloud_tcs_tibero
+IMAGE_NAME_3: jeus8_cloud_das
+IMAGE_NAME_4: jeus8_cloud_ms
+
+
+das_tag: b105_pro02
+ms_tag: b105_pro02
+ssvr_tag: 171017
+tibero_tag: 171027_timestamp
+
+## IaaS Config 
+TCA_MASTER_USER: "root"
+TCA_MASTER_PW: "tmax@23"
+TCA_MASTER_IP: ""
+TCA_MASTER_SVC_PORT: 8080
+TCA_MASTER_SSH_PORT: 22
+
+IMAGE_GATEWAY_USER: "root"
+IMAGE_GATEWAY_PW: "tmax@23"
+IMAGE_GATEWAY_IP: ""
+IMAGE_GATEWAY_PORT: "22"
+IMAGE_INNER_LOCATION: ":22"
+IMAGE_INNER_AUTH: "root:tmax@23"
+IMAGE_OUTER_LOCATION: ":8080"
+
+VM_IMAGE_OUTER_IP: ""	## IMAGE GATEWAY IP
+VM_IMAGE_OUTER_SSH_PORT: 22
+VM_IMAGE_OUTER_USER: "root"
+VM_IMAGE_OUTER_PW: "tmax@23"
+VM_IMAGE_OUTER_DIR: "/tmp/vm_image"
+
+IMAGE_STORAGE_LOCATION: "http:// :8081"
+
+RADOS_GATEWAY_LOCATION: "http:// :8089"
+
+LB_NFT: "true"
+LB_NFT_IP: ""
+
+SYS_AGENT_RUN: "ON"
+TCN_SDN_RUN: "OFF"
+
+VM_MNG_IP:
+VM_INTERNAL_IP:
+VM_PORT: 52000
+VM_NODE_USER: "root"
+VM_NODE_PASSWORD: "tmax@23"
+
+TCS_VM_HOME: "/root/automation/csvmgr"
+
+TCS_LSNR_PORT: 10000
+TCS_RECV_PORT: 34000
+
+WEBCONSOLE_PROXY_SERVER_IP: ""
+WEBCONSOLE_PROXY_SERVER_PORT: 22
+WEBCONSOLE_PROXY_SERVER_USER: "root"
+WEBCONSOLE_PROXY_SERVER_PASSWORD: "tmax@23"
+WEBCONSOLE_MIN_PORT: 15000
+WEBCONSOLE_MAX_PORT: 60000
+WEBCONSOLE_PROXY_SERVER_PUBLIC_IP: ""
+
+CMDB_ENABLE: "ON"
+CMDB_IP: ""
+CMDB_PORT: 8080
+TCNM_IP:
+TCNM_PORT: 8080
+
+AGENT_LXC_VERSION: 210
+
+FAILOVER_ENABLE: "ON"
+IAAS_VERSION: "IAAS"
+VM_NODE_IP:
+VM_ENV: "/root/set_dbenv.sh"
+AUTH_IP:
+CEPH_MON_IP:

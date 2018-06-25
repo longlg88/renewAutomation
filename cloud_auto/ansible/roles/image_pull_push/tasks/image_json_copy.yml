@@ -1,0 +1,54 @@
+---
+
+- name: copy cloud ssvr json
+  copy: src=../../../files/{{ IMAGE_NAME_1 }}.json dest={{ user_home.stdout }}/automation/image_import/ mode=0755
+
+- name: insert cloud ssvr json params
+  replace:
+    dest: "{{ user_home.stdout }}/automation/image_import/{{ IMAGE_NAME_1 }}.json"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@ssvr_tag@@', rep: '{{ ssvr_tag }}' }
+    - { exp: '@@image_registry@@', rep: '{{ image_registry }}' }
+    - { exp: '@@IMAGE_NAME_1@@', rep: '{{ IMAGE_NAME_1 }}' }
+
+- name: copy cloud tibero json
+  copy: src=../../../files/{{ IMAGE_NAME_2 }}.json dest={{ user_home.stdout }}/automation/image_import/ mode=0755
+
+- name: insert cloud tibero json params
+  replace:
+    dest: "{{ user_home.stdout }}/automation/image_import/{{ IMAGE_NAME_2 }}.json"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@tibero_tag@@', rep: '{{ tibero_tag }}' }
+    - { exp: '@@image_registry@@', rep: '{{ image_registry }}' }
+    - { exp: '@@IMAGE_NAME_2@@', rep: '{{ IMAGE_NAME_2 }}' }
+
+- name: copy jeus das
+  copy: src=../../../files/{{ IMAGE_NAME_3 }}.json dest={{ user_home.stdout }}/automation/image_import/ mode=0755
+
+- name: insert jeus das json params
+  replace:
+    dest: "{{ user_home.stdout }}/automation/image_import/{{ IMAGE_NAME_3 }}.json"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@das_tag@@', rep: '{{ das_tag }}' }
+    - { exp: '@@image_registry@@', rep: '{{ image_registry }}' }
+    - { exp: '@@IMAGE_NAME_3@@', rep: '{{ IMAGE_NAME_3 }}' }
+
+- name: copy jeus ms json
+  copy: src=../../../files/{{ IMAGE_NAME_4 }}.json dest={{ user_home.stdout }}/automation/image_import/ mode=0755
+
+- name: insert jeus ms json params
+  replace:
+    dest: "{{ user_home.stdout }}/automation/image_import/{{ IMAGE_NAME_4 }}.json"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@ms_tag@@', rep: '{{ ms_tag }}' }
+    - { exp: '@@image_registry@@', rep: '{{ image_registry }}' }
+    - { exp: '@@IMAGE_NAME_4@@', rep: '{{ IMAGE_NAME_4 }}' }
+

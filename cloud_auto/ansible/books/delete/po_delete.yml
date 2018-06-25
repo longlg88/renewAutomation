@@ -1,0 +1,8 @@
+---
+- name: Po7 delete
+  hosts: '{{ hosts }}'
+  remote_user: '{{ user }}'
+  vars_files:
+    - "../../vars/external_vars.yml"
+  roles:
+    - po_delete

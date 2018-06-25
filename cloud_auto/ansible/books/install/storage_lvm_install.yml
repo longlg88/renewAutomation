@@ -1,0 +1,9 @@
+---
+- name: Create storage lvm
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+    - "../../vars/host_mount.yml"
+
+  roles:
+    - storage_lvm_install

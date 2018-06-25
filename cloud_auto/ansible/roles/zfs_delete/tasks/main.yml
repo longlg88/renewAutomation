@@ -1,0 +1,7 @@
+---
+- name: Copy zpool destroy shell
+  copy: src=../../../files/zpool_destroy.sh dest=/{{ user }}/automation/storage/zpool_destroy.sh owner={{ user }} mode=0755
+
+- name: Execute zpool destroy shell
+  shell: /{{ user }}/automation/storage/zpool_destroy.sh
+  when: ansible_distribution == "Ubuntu"

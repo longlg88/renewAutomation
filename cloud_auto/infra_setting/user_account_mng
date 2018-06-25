@@ -1,0 +1,98 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import json
+from optparse import OptionParser
+
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+from glogger import Logger
+
+sys.path.insert(0,'../')
+import host
+
+def make_user_pw():
+	u_name_list=[]
+	u_pw_list=[]
+	host_info_list=host.InfoList("../config/host_info")
+	u_name = input("User name: ")
+	u_pw = input("User Password: ")
+	for host_info in host_info_list.HostInfo_list:
+#		h_name=host_info.host_name
+		u_name_list.append(u_name)
+		u_pw_list.append(u_pw)
+	return u_name_list + u_pw_list
+
+def make_user_pw_lite():
+	u_name_list=[]
+	u_pw_list=[]
+	host_info_list=host.InfoList("../config/host_info_lite")
+	u_name = input(h_name+"'s user name: ")
+	u_pw = input("User Password: ")
+	for host_info in host_info_list.HostInfo_list:
+#		h_name=host_info.host_name
+		u_name_list.append(u_name)
+		u_pw_list.append(u_pw)
+	return u_name_list + u_pw_list
+
+if __name__ == "__main__":
+	if(len(sys.argv) <= 1):
+		print("./user_account_mng -h or --help will be helpful")
+		sys.exit()
+	use = "Usage: ./%prog [options] [IaaS version]"
+	parser = OptionParser(usage=use)
+	
+	help_info="""User of IaaS version
+	[IaaS version] = SDN / lite
+	"""
+	parser.add_option("-v","--version",dest="version", default=False, action="store_true", help="User of IaaS version")
+#	parser.add_option("-h","--help",dest="help", default=False, help="Help")
+
+	options, args= parser.parse_args()
+	if options.version:
+		while True:
+			print("=================================================")
+			print("|		Create user account 		|")
+			print("=================================================")
+			print("	press r to start or retry")
+			print("	press q to quit")
+			_input=input()
+			try:
+				if(_input == 'r'):
+					if args[0] == "SDN":
+						u_p_list=make_user_pw()
+					elif args[0] == "lite":
+						u_p_list=make_user_pw_lite()
+					list_length=len(u_p_list)
+	
+					## file write start...
+					f_user=open("../config/user_mng",'w')
+					f_user_pw=open("../config/user_pw_mng",'w')
+					print(u_p_list)	
+					## logging		
+					logger = Logger()
+					gen_current_path=os.path.realpath(__file__)
+					current_path=gen_current_path.split('/')[-1]
+					logger.info("==============================================")
+					logger.info("****  This log is for "+current_path.split('.')[0]+" ****")
+					for i in range(0,list_length):
+						if( i < list_length // 2):
+							name=u_p_list[i]
+							data=name+"\n"
+							_data=str(i+1)+"'s user id = " +name
+							f_user.write(data)
+						elif(i >= list_length // 2):
+							pw=u_p_list[i]
+							data=pw+'\n'
+							_data=str(i % (list_length // 2) + 1)+"'s user pw = "+pw
+							f_user_pw.write(data)
+						logger.info(_data)
+					logger.info("==============================================")
+					logger.info("\n")
+					f_user.close()
+					f_user_pw.close()
+				elif(_input == 'q'):
+					sys.exit()
+			except KeyboardInterrupt:
+				print("\nKeyboard interrupt... please re-execute program")
+				sys.exit() 

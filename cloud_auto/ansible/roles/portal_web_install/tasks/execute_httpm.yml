@@ -1,0 +1,21 @@
+---
+- name: echo hostname
+  shell: "echo $(hostname)"
+  register: host_name_echo
+
+- name: copy http.m
+  copy: src=../../../files/http.m dest={{ user_home.stdout }}/webtob/config/http.m mode=0755
+
+- name: change port
+  shell: "sed -i -e 's/@@host_name@@/{{ host_name_echo.stdout }}/g' {{ user_home.stdout }}/webtob/config/http.m"
+
+- name: copy webotb_httpm.sh
+  copy: src=../../../files/webtob_httpm.sh dest={{ user_home.stdout }}/automation/portal_web/ mode=0755
+
+- name: Execute make wsconfig file shell
+  shell: "{{ user_home.stdout }}/automation/portal_web/webtob_httpm.sh"
+  args:
+    warn: no
+    executable: "/bin/bash"
+  register: wsconfig_reg
+  failed_when: "'Exception' in wsconfig_reg.stdout"

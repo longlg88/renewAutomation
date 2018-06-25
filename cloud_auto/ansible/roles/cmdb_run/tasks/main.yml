@@ -1,0 +1,6 @@
+---
+- name: Setting cmdb server run shell
+  copy: src=../../../files/cmdb_server_run.sh dest=/{{ user }}/automation/cmdb/ owner={{ user }} mode=0755
+
+- name: Run cmdb server shell
+  shell: /{{ user }}/automation/cmdb/cmdb_server_run.sh

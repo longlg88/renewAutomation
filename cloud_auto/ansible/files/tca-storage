@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# init script for storage node.
+# by jungsub_shin
+
+### BEGIN INIT INFO
+# Provides:          tca-storage
+# Required-Start:	 zfs-share nfs-kernel-server
+# Required-Stop:     zfs-share nfs-kernel-server
+# Default-Start:	 2 3 4 5
+# Default-Stop:      0 1 6
+### END INIT INFO
+
+# Directories
+tca_agent_block_home=@@user_home@@/tca_agent
+tca_agent_mem_home=/tmp/tca_agent
+
+tca_zfs_lock=$tca_agent_mem_home/zfs_lock
+tca_zfs_mount=$tca_agent_block_home/zfs_mount
+tca_xfs_lock=$tca_agent_mem_home/xfs_lock
+tca_xfs_mount=$tca_agent_block_home/xfs_mount
+
+# Functions
+init_directories () {
+	mkdir -p $tca_zfs_lock;
+	mkdir -p $tca_zfs_mount;
+	mkdir -p $tca_xfs_lock;
+	mkdir -p $tca_xfs_mount;
+}
+
+init_nfs () {
+	echo "$tca_zfs_mount *(rw,fsid=0,no_root_squash,insecure,no_subtree_check,async)" > /etc/exports
+	exportfs -ra
+}
+
+init_zfs () {
+	zfs unshare -a # Before share -a, unshare -a must be executed.
+	zfs share -a
+}
+
+# Run
+case "$1" in
+  start)
+	init_directories
+	init_nfs
+	init_zfs # init zfs must be started befor init nfs.
+	;;
+  restart|reload|force-reload)
+	echo "Error: argument '$1' not supported" >&2
+	echo "Usage: $0 [start|stop]" >&2
+	exit 3
+	;;
+  stop|"")
+	;;
+  *)
+	echo "Usage: $0 [start|stop]" >&2
+	exit 3
+	;;
+esac
+
+:

@@ -1,0 +1,154 @@
+#!/usr/bin/python3
+import os
+import sys
+import platform
+
+import argparse
+import utils
+import config
+import wol
+import host
+import install
+import uninstall
+import const
+from subprocess import Popen, PIPE
+import ansible
+sys.path.insert(0,'config/')
+import gvar
+usage_txt = ''' CLOUD AUTOMATE INSTALL USAGE
+ * cloud_auto [module]
+
+cloud_auto host - 
+           sysinstall
+           install
+           uninstall
+           wol - 
+           help
+
+'''
+
+def InitSysConfig():
+    if utils.FileisExist("./","Config") is False:
+        try:
+            config_fd = open("Config", 'w')
+            #to do : write configuration to file
+            config_fd.close()
+
+        except IOError:
+            print("Config File Create Failure")
+#    else:
+#        print("Config File Already Exist")
+
+def ShowSysConfig():
+    try:
+        config_fd = open("Config",'r')
+        #to do : print information to console
+        config_fd.close()
+    except IOError:
+        print("Config File Read Failure")
+
+
+def EnvChk():
+    pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
+    procCmdList = []
+    for pid in pids:
+        try:
+            procCmd = open(os.path.join('/proc', pid, 'cmdline'), 'rb').read()
+            procCmdList.append(procCmd)
+        except IOError: # proc terminated
+            continue
+
+    for procCmd in procCmdList:
+        procStr = procCmd.decode("utf-8")
+        if config.Server.isManageFTP is True:
+            if "tftp" in procStr:
+                print(procStr)
+            else:
+                servermng.Install.shellapt('tftpd-hpa')
+        if config.Server.isManageDHCP is True:
+            if "dhcpd" in procStr:
+                print(procStr)
+            else:
+                servermng.Install.shellapt('isc-dhcpd-server')
+        if config.Server.isManageHTTP is True:
+            if "apache" in procStr:
+                print(procStr)
+            else:
+                servermng.Install.shellapt('apache2')
+
+
+def init_ansible_nodes_all():
+    # get ansible hosts ipv4
+    f=open("./ansible/vars/common_vars.yml",'r')
+    lines=f.readlines()
+    #iaas_version = "".join([s.split(":")[-1] for s in lines if 'IAAS_VERSION' in s][0]).replace('\n','').replace(' ','').replace('"','')
+    isSDN="".join([s.split(":")[-1] for s in lines if 'TCN_SDN_RUN' in s][0]).replace('\n','').replace(' ','').replace('"','')
+#    if iaas_version == "IAAS":
+    if isSDN == "ON":
+        host_info_list = host.InfoList("./config/host_info")
+#    elif iaas_version  == "IAASLITE":
+    elif isSDN == "OFF":
+        host_info_list = host.InfoList("./config/host_info_lite")
+    ansible_host_iface_list = []
+    for host_info in host_info_list.HostInfo_list:
+        for iface_info in host_info.ifaceInfo_list:
+            if iface_info.management !="":
+                ansible_host_iface_list.append([host_info.host_name,iface_info.ipv4])
+
+    #ansible_host -> list of [host_name, iface_info.ipv4]
+    for ansible_host in ansible_host_iface_list:
+        result = ansible.ssh_root_establish(ansible_host[1])
+        if result == True:
+            print("SSH Root establish to " + ansible_host[0] + " is Success")
+        else:
+            print("Fail to SSH Root establish to " + ansible_host[0])
+
+def init_keygen():
+    p=Popen(['sudo ssh-keygen -t rsa'], stdin=PIPE, shell=True)
+    p.communicate(input=b'\n')
+
+if __name__ == "__main__":
+
+    args = []
+    if len(sys.argv) < 2:
+        print(usage_txt)
+        sys.exit('not defined argument')
+    else:
+        for arg in sys.argv : args.append(arg)
+        args.pop(0)
+
+    if args[0] == 'host':
+        pass
+    elif args[0] == 'install':
+        if args[1] == 'init':
+            install.init_essential()
+        elif args[1] == 'ssh':
+            if args[2] == 'ansible_nodes':
+                init_ansible_nodes_all()
+            else:
+                ansible.ssh_root_establish(args[2])
+        elif args[1] == 'keygen':
+            init_keygen()
+        pass
+    elif args[0] == 'uninstall':
+        if args[1] =='init':
+            uninstall.init_essential()
+    elif args[0] == 'playbook':
+        ansible.playbook(args[1],args[2])
+    elif args[0] == 'ansible_host':
+        ansible.build_ansible_hosts()
+    elif args[0] == 'wol':
+        pass
+    elif args[0] == 'help':
+        pass
+
+#    if platform.system() is not 'Windows':
+#        InitSysConfig()
+#        EnvChk()
+
+
+ #   if len(sys.argv) is not 1:
+ #       w = wol.EtherWaker()
+ #       w.wakeOnLan(sys.argv[1])
+
+    

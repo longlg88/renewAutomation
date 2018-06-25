@@ -1,0 +1,50 @@
+table ip tims {
+#-------------------------------------------------------------------------------------
+# NAT type
+#       set dnat
+        chain preroutingnat_200 {
+                type nat hook prerouting priority -200; policy accept;
+                #ip protocol icmp log prefix "PRE_200     NAT    "
+                jump nat_prerouting_gw
+        }
+
+        chain nat_prerouting_gw {
+                ip daddr 192.168.105.235 counter dnat 172.20.0.35
+                ip daddr 192.168.105.236 counter dnat 172.20.0.36
+                ip daddr 192.168.105.237 counter dnat 172.20.0.37
+
+                ip daddr 192.168.105.238 counter dnat 172.16.0.38
+                ip daddr 192.168.105.239 counter dnat 172.16.0.39
+                ip daddr 192.168.105.240 counter dnat 172.16.0.40
+                ip daddr 192.168.105.241 counter dnat 172.16.0.41
+                ip daddr 192.168.105.242 counter dnat 172.16.0.42
+                ip daddr 192.168.105.243 counter dnat 172.16.0.43
+                ip daddr 192.168.105.244 counter dnat 172.16.0.44
+        }
+#-------------------------------------------------------------------------------------
+#
+#       set snat
+        chain postroutingnat_200 {
+                type nat hook postrouting priority -200; policy accept;
+                #ip protocol icmp log prefix "POST_200    NAT    "
+                jump nat_postrouting_gw
+        }
+
+        chain nat_postrouting_gw {
+
+                ip saddr 172.20.0.35 counter snat 192.168.105.235
+                ip saddr 172.20.0.36 counter snat 192.168.105.236
+                ip saddr 172.20.0.37 counter snat 192.168.105.237
+
+                ip saddr 172.16.0.38 counter snat 192.168.105.238
+                ip saddr 172.16.0.39 counter snat 192.168.105.239
+                ip saddr 172.16.0.40 counter snat 192.168.105.240
+                ip saddr 172.16.0.41 counter snat 192.168.105.241
+                ip saddr 172.16.0.42 counter snat 192.168.105.242
+                ip saddr 172.16.0.43 counter snat 192.168.105.243
+                ip saddr 172.16.0.44 counter snat 192.168.105.244
+
+                ip saddr 172.19.0.1/24 counter snat 192.168.105.14
+                ip saddr 172.16.0.1/24 counter snat 192.168.105.14
+		}
+}

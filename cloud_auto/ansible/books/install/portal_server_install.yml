@@ -1,0 +1,18 @@
+---
+- name: Init ansible home
+  hosts: '{{ hosts }}'
+
+- name: Install PO7 manually
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/external_vars.yml"
+    - "../../vars/po7_vars.yml"
+    - "../../vars/portal_server_domain-config.yml"
+    - "../../vars/osarch_vars.yml"
+
+  environment:
+    PATH: "{{ jeus_home }}/bin:{{ jeus_home }}/lib:{{ ansi_path }}"
+    PROOBJECT_HOME: "{{ po_home }}"
+
+  roles:
+    - portal_server_install

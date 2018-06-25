@@ -1,0 +1,68 @@
+---
+- name: make directory proobject7
+  file: path=/{{ user_home }}/proobject7 state=directory
+
+- name: untar proobject7 tar
+  unarchive:
+    extra_opts="--strip-components=1"
+    src=../../../files/binary/iaas_proobject7.tar.gz
+    dest=/{{ user_home }}/proobject7
+
+- name: copy po7 war
+  copy: src=../../../files/binary/iaas_po7.war dest=/{{ user_home }}/proobject7/ mode=0755
+
+- name: copy IaaSconfig
+  copy: src=../../../files/IaaSconfig dest=/{{ user }}/
+
+- name: IaaS config modify
+  replace:
+    dest: "/{{ user_home }}/IaaSconfig"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@MasterUser@@', rep: '{{ MasterUser }}' }
+    - { exp: '@@MasterPassword@@', rep: '{{ MasterPassword }}' }
+    - { exp: '@@MasterIp@@', rep: '{{ MasterIp }}' }
+    - { exp: '@@MasterSvcPort@@', rep: '{{ MasterSvcPort }}' }
+    - { exp: '@@MasterSshPort@@', rep: '{{ MasterSshPort }}' }
+    - { exp: '@@imageGatewayUser@@', rep: '{{ imageGatewayUser }}' }
+    - { exp: '@@imageGatewayPW@@', rep: '{{ imageGatewayPW }}' }
+    - { exp: '@@imageGatewayIP@@', rep: '{{ imageGatewayIP }}' }
+    - { exp: '@@imageGatewayPort@@', rep: '{{ imageGatewayPort }}' }
+    - { exp: '@@imageInnerLocation@@', rep: '{{ imageInnerLocation }}' }
+    - { exp: '@@imageInnerAuth@@', rep: '{{ imageInnerAuth }}' }
+    - { exp: '@@SysAgent@@', rep: '{{ SysAgent }}' }
+    - { exp: '@@NetworkSdn@@', rep: '{{ NetworkSdn }}' }
+    - { exp: '@@VmMngIp@@', rep: '{{ VmMngIp }}' }
+    - { exp: '@@VmInternalIp@@', rep: '{{ VmInternalIp }}' }
+    - { exp: '@@VmPort@@', rep: '{{ VmPort }}' }
+    - { exp: '@@VmNodeUser@@', rep: '{{ VmNodeUser }}' }
+    - { exp: '@@VmNodePassword@@', rep: '{{ VmNodePassword }}' }
+    - { exp: '@@TCS_VM_HOME@@', rep: '{{ TCS_VM_HOME }}' }
+    - { exp: '@@ZpoolName@@', rep: '{{ ZpoolName }}' }
+    - { exp: '@@TCS_LSNR_PORT@@', rep: '{{ TCS_LSNR_PORT }}' }
+    - { exp: '@@TCS_RECV_PORT@@', rep: '{{ TCS_RECV_PORT }}' }
+
+- name: IaaS config move
+  shell: mv /{{ user }}/IaaSconfig /{{ user }}/proobject7/config/
+
+- name: Mapping sysmanager ip in servicegroup.xml
+  replace:
+    dest: "/{{ user }}/proobject7/application/servicegroup/master/config/servicegroup.xml"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@TMAX_SYSMANAGER_IP@@', rep: '{{ TMAX_SYSMANAGER_IP }}' }
+
+- name: copy iaas docker run
+  copy: ../../../files/docker_run/iaas_run.sh dest=/{{ user_home }}/ mode=0755
+
+- name: execute iaas docker run shell
+  shell: "nohup /{{ user_home }}/iaas_run.sh"
+
+- name: copy additional iaasconfig file
+  copy: src=../../../files/additional_iaasconfig dest=/{{ user_home }}/ mode=0755
+
+- name: execute additional_iaasconfig
+  shell: "nohup /{{ user_home }}/additional_iaasconfig"
+

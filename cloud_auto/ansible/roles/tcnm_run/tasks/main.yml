@@ -1,0 +1,105 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: copy po7 war
+  copy:
+        src=../../../files/binary/{{ po7_runtime_binary }} dest={{ domaindir }}/.applications/{{ po7_runtime_binary }} mode=0755
+  become: true
+
+- name: make directory proobject7
+  file: path={{ user_home.stdout }}/proobject7 state=directory
+  become: true
+
+- name: untar proobject tar
+  unarchive: 
+    extra_opts="--strip-components=1"
+    src=../../../files/binary/tcnm_proobject7.tar.gz
+    dest={{ user_home.stdout }}/proobject7
+  become: true
+
+- name: Replace config/tcn_master.cfg
+  replace:
+    dest: "{{ user_home.stdout }}/proobject7/config/tcn_master.cfg"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@TCN_CONTROLLER_IP@@', rep: '{{ TCNM_IP }}' }
+    - { exp: '@@CMDB_IP@@', rep: '{{ CMDB_IP }}' }
+
+- name: Replace config/channel.xml
+  replace:
+    dest: "{{ user_home.stdout }}/proobject7/config/channel.xml"
+    regexp: '{{ item.exp }}'
+    replace: '{{ item.rep }}'
+  with_items:
+    - { exp: '@@TCN_CONTROLLER_IP@@' , rep: '{{ TCNM_IP }}' }
+
+- name: Replace servicegroup/tcnm/config/servicegroup.xml
+  replace:
+    dest: '{{ user_home.stdout }}/proobject7/application/servicegroup/tcnm/config/servicegroup.xml'
+    regexp: '{{ item.exp }}'
+    replace: '{{ item.rep }}'
+  with_items:
+    - { exp: '@@TCN_CONTROLLER_IP@@', rep: '{{ TCNM_IP }}' }
+
+- name: Replace config/proobject.xml
+  replace:
+    dest: '{{ user_home.stdout }}/proobject7/config/proobject.xml'
+    regexp: '{{ item.exp }}'
+    replace: '{{ item.rep }}'
+  with_items:
+    - { exp: '@@TCN_OUTBOUND_PORT@@', rep: '{{ nft_outbound_port }}' }
+
+
+- name: Replace config/dbio_config.xml
+  replace:
+    dest: '{{ user_home.stdout }}/proobject7/config/dbio_config.xml'
+    regexp: '{{ item.exp }}'
+    replace: '{{ item.rep }}'
+  with_items:
+    - { exp: '@@IAAS_DATA_SOURCE_ID@@', rep: '{{ iaas_data_source_id }}' }
+    - { exp: '@@TCNM_DATA_SOURCE_ID@@', rep: '{{ tcnm_data_source_id }}' }
+    - { exp: '@@NFT_DATA_SOURCE_ID@@', rep: '{{ nft_data_source_id }}' }
+
+
+
+- name: Copy tcnm_run.sh
+  copy: src=../../../files/run/tcnm_run.sh dest={{ user_home.stdout }}/cmd/ mode=0755
+  become: true
+
+- name: Copy tcnm_down.sh
+  copy: src=../../../files/run/tcnm_down.sh dest={{ user_home.stdout }}/cmd/ mode=0755
+  become: true
+
+
+- name: Replace tcnm_run.sh
+  replace:
+    dest: "{{ user_home.stdout }}/cmd/tcnm_run.sh"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@jeus_home@@', rep: '{{ jeus_home }}' }
+    - { exp: '@@DOMAINNAME@@', rep: '{{ domain }}' }
+    - { exp: '@@USERNAME@@', rep: '{{ jeus_username }}' }
+    - { exp: '@@PASSWORDCMD@@', rep: '{{ jeus_password_cmd }}' }
+    - { exp: '@@BASE-PORT@@', rep: '{{ jeus_port }}' }
+    - { exp: '@@PROOBJECT_TCNM_SERVER_NAME@@', rep: '{{ po7_tcnm_server_name }}' }
+    - { exp: '@@po_tcnm_base_port@@', rep: '{{ po_tcnm_base_port }}' }
+  become: true
+
+- name: Replace tcnm_down.sh
+  replace:
+    dest: "{{ user_home.stdout }}/cmd/tcnm_down.sh"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@jeus_home@@', rep: '{{ jeus_home }}' }
+    - { exp: '@@DOMAINNAME@@', rep: '{{ domain }}' }
+    - { exp: '@@USERNAME@@', rep: '{{ jeus_username }}' }
+    - { exp: '@@PASSWORDCMD@@', rep: '{{ jeus_password_cmd }}' }
+    - { exp: '@@BASE-PORT@@', rep: '{{ jeus_port }}' }
+    - { exp: '@@PROOBJECT_TCNM_SERVER_NAME@@', rep: '{{ po7_tcnm_server_name }}' }
+    - { exp: '@@po_tcnm_base_port@@', rep: '{{ po_tcnm_base_port }}' }
+  become: true

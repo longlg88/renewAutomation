@@ -1,0 +1,29 @@
+# Default option values. You can input your options.
+domain: "domain1"
+domaindir: "{{ jeus_home }}/domains/{{ domain }}"
+productionmode: "true"
+server_name: "adminServer"
+jvm_sysmanager_config: "-Xmx1024m -XX:MaxMetaspaceSize=1024m -DPROOBJECT_HOME=/root/proobject7"
+jeus_port: "9736"
+jms_port: "9741"
+http_port: "8088"
+usevirtualmulticast: false
+heartbeataddress: "224.0.0.1"
+heartbeatport: "12488"
+# password's plain text is jeus.
+# If you want to set encrypted password, change it by set-password command with algorithm option in jeusadmin
+jeus_password: "{base64}{{ 'jeus' | b64encode }}"
+jeus_username: "jeus"
+jeus_password_cmd: "jeus"
+
+# Other configuration
+jeus_lang: "ko"
+jvm_vendor: "Sun"
+
+# PO7 Server Config
+
+po7_sysmanager_server_name: "ProObject7"
+po_sysmanager_base_port: "19736"
+po_sysmanager_http_port: "8080"
+po_sysmanager_listen_address: "172.31.1.1"  ##IP using in Sysmanager #
+po_sysmanager_jms_port: "19741"

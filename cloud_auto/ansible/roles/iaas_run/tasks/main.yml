@@ -1,0 +1,148 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: copy po7 war
+  copy:
+        src=../../../files/binary/{{ po7_runtime_binary }} dest={{ domaindir }}/.applications/{{ po7_runtime_binary }} mode=0755
+
+- name: make directory proobject7
+  file: path={{ user_home.stdout }}/proobject7 state=directory
+
+- name: untar proobject tar
+  unarchive:
+    extra_opts="--strip-components=1"
+    src=../../../files/binary/iaas_proobject7.tar.gz
+    dest={{ user_home.stdout }}/proobject7
+
+- name: copy IaaSconfig
+  copy: src=../../../files/IaaSconfig dest={{ user_home.stdout }}/
+
+#- name: IaaS Config in variable setting 'NetworkSdn'
+#  lineinfile:
+#    path: "{{ user_home.stdout }}/IaaSconfig"
+#    regexp: '^SYS_AGENT_RUN='
+#    insertafter: 'SYS_AGENT_RUN='
+#    line: 'TCN_SDN_RUN=@@NetworkSdn@@'
+#  when: IAAS_VERSION == "IAAS" and NetworkSdn == "OFF"
+
+- name: IaaS Config
+  replace:
+    dest: "{{ user_home.stdout }}/IaaSconfig"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@TCA_MASTER_USER@@', rep: '{{ TCA_MASTER_USER }}' }
+    - { exp: '@@TCA_MASTER_PW@@', rep: '{{ TCA_MASTER_PW }}' }
+    - { exp: '@@TCA_MASTER_IP@@', rep: '{{ TCA_MASTER_IP }}' }
+    - { exp: '@@TCA_MASTER_SVC_PORT@@', rep: '{{ TCA_MASTER_SVC_PORT }}' }
+    - { exp: '@@TCA_MASTER_SSH_PORT@@', rep: '{{ TCA_MASTER_SSH_PORT }}' }
+
+    - { exp: '@@IMAGE_GATEWAY_USER@@', rep: '{{ IMAGE_GATEWAY_USER }}' }
+    - { exp: '@@IMAGE_GATEWAY_PW@@', rep: '{{ IMAGE_GATEWAY_PW }}' }
+    - { exp: '@@IMAGE_GATEWAY_IP@@', rep: '{{ IMAGE_GATEWAY_IP }}' }
+    - { exp: '@@IMAGE_GATEWAY_PORT@@', rep: '{{ IMAGE_GATEWAY_PORT }}' }
+    - { exp: '@@IMAGE_INNER_LOCATION@@', rep: '{{ IMAGE_INNER_LOCATION }}' }
+    - { exp: '@@IMAGE_INNER_AUTH@@', rep: '{{ IMAGE_INNER_AUTH }}' }
+    - { exp: '@@IMAGE_OUTER_LOCATION@@', rep: '{{ IMAGE_OUTER_LOCATION }}' }
+    - { exp: '@@IMAGE_STORAGE_LOCATION@@', rep: '{{ IMAGE_STORAGE_LOCATION }}' }
+    - { exp: '@@IMAGE_STORAGE_AUTH@@', rep: '{{ IMAGE_STORAGE_AUTH }}' }
+ 
+    - { exp: '@@LB_NFT@@', rep: '{{ LB_NFT }}' }
+    - { exp: '@@LB_NFT_IP@@' ,rep: '{{ LB_NFT_IP }}' }
+
+    - { exp: '@@SYS_AGENT_RUN@@', rep: '{{ SYS_AGENT_RUN }}' }
+    - { exp: '@@TCN_SDN_RUN@@', rep: '{{ TCN_SDN_RUN }}' }
+    
+    - { exp: '@@VM_MNG_IP@@', rep: '{{ VM_MNG_IP }}' }
+    - { exp: '@@VM_INTERNAL_IP@@', rep: '{{ VM_INTERNAL_IP }}' }
+    - { exp: '@@VM_PORT@@', rep: '{{ VM_PORT }}' }
+    - { exp: '@@VM_NODE_USER@@', rep: '{{ VM_NODE_USER }}' }
+    - { exp: '@@VM_NODE_PASSWORD@@', rep: '{{ VM_NODE_PASSWORD }}' }
+    - { exp: '@@TCS_VM_HOME@@', rep: '{{ TCS_VM_HOME }}' }
+    - { exp: '@@ZPOOL_NAME@@', rep: '{{ ZPOOL_NAME }}' }
+
+    - { exp: '@@TCS_LSNR_PORT@@', rep: '{{ TCS_LSNR_PORT }}' }
+    - { exp: '@@TCS_RECV_PORT@@', rep: '{{ TCS_RECV_PORT }}' }
+   
+    - { exp: '@@WEBCONSOLE_PROXY_SERVER_IP@@', rep: '{{ WEBCONSOLE_PROXY_SERVER_IP }}' }
+    - { exp: '@@WEBCONSOLE_PROXY_SERVER_PUBLIC_IP@@', rep: '{{ WEBCONSOLE_PROXY_SERVER_PUBLIC_IP }}' }
+    - { exp: '@@WEBCONSOLE_PROXY_SERVER_PORT@@', rep: '{{ WEBCONSOLE_PROXY_SERVER_PORT }}' }
+    - { exp: '@@WEBCONSOLE_PROXY_SERVER_USER@@', rep: '{{ WEBCONSOLE_PROXY_SERVER_USER }}' }
+    - { exp: '@@WEBCONSOLE_PROXY_SERVER_PASSWORD@@', rep: '{{ WEBCONSOLE_PROXY_SERVER_PASSWORD }}' }
+    - { exp: '@@WEBCONSOLE_MIN_PORT@@', rep: '{{ WEBCONSOLE_MIN_PORT }}' }
+    - { exp: '@@WEBCONSOLE_MAX_PORT@@', rep: '{{ WEBCONSOLE_MAX_PORT }}' }
+ 
+    - { exp: '@@CMDB_ENABLE@@', rep: '{{ CMDB_ENABLE }}' }
+    - { exp: '@@CMDB_IP@@', rep: '{{ CMDB_IP }}' }
+    - { exp: '@@CMDB_PORT@@', rep: '{{ CMDB_PORT }}' }
+    - { exp: '@@TCNM_IP@@', rep: '{{ TCNM_IP }}' }
+    - { exp: '@@TCNM_PORT@@', rep: '{{ TCNM_PORT }}' }
+
+    - { exp: '@@FAILOVER_ENABLE@@', rep: '{{ FAILOVER_ENABLE }}' }
+    - { exp: '@@IAAS_VERSION@@', rep: '{{ IAAS_VERSION }}' }
+    - { exp: '@@PROZONE_MASTER_DATASOURCE@@', rep: '{{ PROZONE_MASTER_DATASOURCE }}' }
+    - { exp: '@@AGENT_LXC_VERSION@@', rep: '{{ AGENT_LXC_VERSION }}' }
+
+    - { exp: '@@AUTH_IP@@', rep: '{{ AUTH_IP }}' }
+    - { exp: '@@CEPH_MON_IP@@', rep: '{{ CEPH_MON_IP }}' }
+
+- name: IaaS Config in variable setting VM_NODE_IP / VM_ENV
+  blockinfile:
+    path: "{{ user_home.stdout }}/IaaSconfig"
+    marker: ""
+    insertafter: EOF
+    block: |
+      VM_NODE_IP={{ VM_NODE_IP }}
+      VM_ENV={{ VM_ENV }}
+  when: IAAS_VERSION == "IAASLITE"
+
+#- name: IaaS Config in variable setting 'vmEnv'
+#  lineinfile:
+#    path: "{{ user_home.stdout }}/IaaSconfig"
+#    regexp: ''
+#    insertafter: EOF
+#    line: 'VM_ENV={{ VM_ENV }}'
+#  when: IAAS_VERSION == "IAASLITE"
+
+- name: IaaS config move
+  shell: "mv {{ user_home.stdout }}/IaaSconfig {{ user_home.stdout }}/proobject7/config/"
+
+#- name: Mapping sysmanager ip in servicegroup.xml
+#  replace:
+#    dest: "{{ user_home.stdout }}/proobject7/application/servicegroup/master/config/servicegroup.xml"
+#    regexp: "{{ item.exp }}"
+#    replace: "{{ item.rep }}"
+#  with_items:
+#    - { exp: '@@TMAX_SYSMANAGER_IP@@', rep: '{{ TMAX_SYSMANAGER_IP }}' }
+
+- name: Create po7run.sh
+  copy:
+    src=../../../files/po7run.sh dest={{ user_home.stdout }}/ mode=0775
+
+- name: Replace po7run.sh
+  replace:
+    dest: "{{ user_home.stdout }}/po7run.sh"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@DOMAINNAME@@', rep: '{{ domain }}' }
+    - { exp: '@@USERNAME@@', rep: '{{ jeus_username }}' }
+    - { exp: '@@PASSWORDCMD@@', rep: '{{ jeus_password_cmd }}' }
+    - { exp: '@@BASE-PORT@@', rep: '{{ jeus_port }}' }
+    - { exp: '@@PROOBJECT_SERVER_NAME@@', rep: '{{ po7_server_name }}' }
+
+#- name: jeus run
+#  shell: "nohup {{ user_home.stdout }}/po7run.sh"
+#  args:
+#    warn: no
+#    executable: "/bin/bash"
+#  register: das_run_reg
+#  failed_when: "'Exception' in das_run_reg.stdout"
+
+#- name: copy additional iaasconfig file
+#  copy: src=../../../files/additional_iaasconfig dest={{ user_home.stdout }}/ mode=0755
+
+#- name: execute additional_iaasconfig
+#  shell: "nohup /{{ user_home }}/additional_iaasconfig"

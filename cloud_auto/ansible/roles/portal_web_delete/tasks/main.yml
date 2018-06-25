@@ -1,0 +1,15 @@
+---
+- name: WebtoB down shell copy
+  copy: src=../../../files/webtob_down.sh dest=/{{ user }}/ mode=0755
+
+- name: execute webtob down shell
+  shell: nohup /{{ user }}/webtob_down.sh
+
+- name: remove directory
+  file: path=/{{ user }}/webtob state=absent
+
+#- name: remove shell
+#  file: path=/{{ user }}/webtob_down.sh state=absent
+
+- name: remove portal web directory 
+  file: path=/{{ user }}/automation/portal_web state=absent

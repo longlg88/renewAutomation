@@ -1,0 +1,9 @@
+---
+- name: Install tcnm using Docker
+  hosts: '{{ hosts }}'
+  remote_user: '{{ user }}'
+  vars_files:
+    - "../../vars/po7_vars.yml"
+    - "../../vars/tcnm_domain-config.yml"
+  roles:
+    - docker_tcnm_install

@@ -1,0 +1,25 @@
+##Compute
+C_accessName=root
+C_accessAuth
+
+C_accessName=root
+#C_accessAuth
+
+##Storage
+#S_accessName=root
+#S_accessAuth
+
+##Master
+M_accessName=root
+M_accessAuth
+
+##Network info
+net_name=net_front
+
+##Subnet info
+sn_name=subnet-1
+sn_ipAddr=172.16.128.1
+sn_netmask=255.255.128.0
+sn_gateway=172.16.0.1
+sn_dns=8.8.8.8
+sn_isLb=0

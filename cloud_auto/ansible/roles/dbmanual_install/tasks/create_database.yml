@@ -1,0 +1,61 @@
+---
+- name: Tibero Installer run gen tip script
+  shell: "sh {{ tb_home }}/config/gen_tip.sh"
+  args:
+    executable: "/bin/bash"
+  become: true
+
+- name: Tibero nomount mode
+  shell: "{{ tb_home }}/bin/tbboot nomount"
+  args:
+    warn: no
+    executable: "/bin/bash"
+  become: true
+
+- name: Tibero create initial database
+  shell: "tbsql sys/tibero @{{ user_home.stdout }}/automation/db_files/sql_script/create_database.sql"
+  become: true
+
+- name: Stop tibero
+  shell: "{{ tb_home }}/bin/tbdown"
+  args:
+    executable: "/bin/bash"
+  become: true
+
+- name: Tibero Boot
+  shell: "{{ tb_home }}/bin/tbboot"
+  args:
+    warn: no
+    executable: "/bin/bash"
+  become: true
+
+- name: Execute system script
+  shell: "sh {{ tb_home }}/scripts/system.sh -p1 tibero -p2 syscat -a1 Y -a2 Y -a3 Y -a4 Y error"
+  args:
+    executable: "/bin/bash"
+  become: true
+
+- name: Stop tibero
+  shell: "{{ tb_home }}/bin/tbdown"
+  args:
+    executable: "/bin/bash"
+  become: true
+
+- name: change max session count
+  shell: 'sed -i -e "s/MAX_SESSION_COUNT=20/MAX_SESSION_COUNT=400/g" {{ user_home.stdout }}/tibero6/config/tibero.tip'
+  become: true
+
+- name: change tibero shared memory size
+  shell: 'sed -i -e "s/TOTAL_SHM_SIZE=2G/TOTAL_SHM_SIZE=3G/g" {{ user_home.stdout }}/tibero6/config/tibero.tip'
+  become: true
+
+- name: change host shared memory size
+  shell: "sysctl -w kernel.shmmax=3221225472"
+  become: true
+
+- name: Tibero Boot
+  shell: "{{ tb_home }}/bin/tbboot"
+  args:
+    warn: no
+    executable: "/bin/bash"
+  become: true

@@ -1,0 +1,73 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }'"
+  register: user_home
+  become: true
+
+- name: Setting make_user.sql
+  shell: "{{ user_home.stdout }}/automation/db_files/gen_makeusersql.sh"
+  become: true
+          
+- name: Create iaas db user
+  shell: "tbsql sys/tibero @{{ user_home.stdout }}/automation/db_files/sql_script/make_user.sql"
+  become: true
+
+- name: Create iaas table sql
+  shell: "tbsql {{ iaas_db_user }}/{{ iaas_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/imp_create_table.sql"
+  become: true
+
+- name: Insert iaas table sql
+  shell: "tbsql {{ iaas_db_user }}/{{ iaas_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/insert_table.sql"
+
+- name: Insert trigger 1 to iaas
+  shell: "tbsql {{ iaas_db_user }}/{{ iaas_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/trigger_1.sql"
+  become: yes
+
+- name: Insert trigger 2 to iaas
+  shell: "tbsql {{ iaas_db_user }}/{{ iaas_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/trigger_2.sql"
+  become: yes
+
+- name: Create TCNM table sql
+  shell: "tbsql {{ tcnm_db_user }}/{{ tcnm_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/tcnm_db.sql"
+  when: TCN_SDN_RUN == "ON"
+  become: true
+
+- name: Create usermgt table sql
+  shell: "tbsql {{ user_db_user }}/{{ user_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/usermgt_create_table.sql"
+  become: true
+
+- name: Insert usermgt table sql
+  shell: "tbsql {{ user_db_user }}/{{ user_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/usermgt_insert.sql"
+  become: true
+
+- name: Create CMDB table sql
+  shell: "tbsql {{ cmdb_db_user }}/{{ cmdb_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/cmdb_create_table.sql"
+  become: true
+
+- name: Create auth table sql
+  shell: "tbsql {{ auth_db_user }}/{{ auth_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/auth_create_table.sql"
+  become: true
+
+- name: Insert auth table sql
+  shell: "tbsql {{ auth_db_user }}/{{ auth_db_password}} @{{ user_home.stdout }}/automation/db_files/sql_script/auth_insert.sql"
+  become: true
+
+#- name: usermgt to auth
+#  shell: "tbsql {{ user_db_user }}/{{ user_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/usermgt_to_auth_share.sql"
+#  become: true
+
+#- name: auth to usermgt
+#  shell: "tbsql {{ auth_db_user }}/{{ auth_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/auth_to_usermgt_share.sql"
+#  become: true
+
+- name: Create nfvadmin sql
+  shell: "tbsql {{ nft_db_user }}/{{ nft_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/nfvadmin_create.sql"
+  become: true
+
+- name: Insert nfvadmin sql
+  shell: "tbsql {{ nft_db_user }}/{{ nft_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/nfvadmin_insert.sql"
+  become: true
+
+- name: CDS create sql
+  shell: "tbsql {{ cds_db_user}}/{{ cds_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/cds_create.sql"
+  become: true

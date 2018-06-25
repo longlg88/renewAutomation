@@ -1,0 +1,9 @@
+---
+- name: Clean compute
+  hosts: '{{ hosts }}'
+  remote_user: '{{ user }}'
+  vars_files:
+    - "../../vars/external_vars.yml"
+
+  roles:
+    - lxc_clean 

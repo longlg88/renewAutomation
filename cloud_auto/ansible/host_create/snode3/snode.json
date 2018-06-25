@@ -1,0 +1,11 @@
+{
+    "dto":{
+        "hostUuid":"@@@SHOSTUUID",
+        "totalCpu":16,
+        "totalMemory":32000,
+        "name":"@@@SHOSTNAME",
+        "description":"@@@SHOSTDES",
+        "accessName":"root",
+        "accessAuth":"tmax@23"
+    }
+}

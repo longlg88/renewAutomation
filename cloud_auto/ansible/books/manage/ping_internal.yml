@@ -1,0 +1,11 @@
+---
+- name: Ping internal IP test
+  hosts: '{{ hosts }}'
+  remote_user: '{{ user }}'
+  environment:
+    ANSIBLE_HOST: '{{ ANSIBLE_HOST }}'
+  vars_files:
+    - "../../vars/external_vars.yml"
+
+  roles:
+    - ping_internal

@@ -1,0 +1,11 @@
+---
+- name: copy po down shell
+  copy: src=../../../files/po7down.sh dest=/{{ user }}/ mode=0755
+
+- name: execute po down shell
+  shell: "nohup /{{ user }}/po7down.sh"
+  args:
+    warn: no
+    executable: "/bin/bash"
+  register: po_down_reg
+  failed_when: "'Exception' in po_down_reg.stdout"

@@ -1,0 +1,54 @@
+--- 
+- name: if set env in bashrc
+  stat:
+    path="/root/set_dbenv.sh"
+  register: ifbashrc
+
+- name: Set env in bashrc
+  lineinfile:
+    dest: "{{ user_home.stdout }}/set_dbenv.sh"
+    line: "{{ item.line }}"
+    insertafter: "{{ item.after }}"
+  with_items:
+    - { line: "###################add TIBERO ENV################
+			\n####################add CSVMGR ENV################
+                        \nexport CSVMGR_HOME={{ CSVMGR_HOME }}
+                        \nexport LD_LIBRARY_PATH=$CSVMGR_HOME/lib:$CSVMGR_HOME/client/lib
+			\nexport CSVMGR_SID={{ CSVMGR_SID }}
+			\nexport CSVMGR_IPADDR={{ CSVMGR_IPADDR }}
+			\nexport CSVMGR_PORT={{ CSVMGR_PORT }}
+			\nexport CSVMGR_META_DB_NAME={{ CSVMGR_META_DB_NAME }}
+			\nexport CSVMGR_META_DB_USER={{ CSVMGR_META_DB_USER }}
+			\nexport CSVMGR_META_DB_PWD={{ CSVMGR_META_DB_PWD }}
+			\nexport CSVMGR_LOG_DIR=$CSVMGR_HOME/instance/$CSVMGR_SID/log
+			\nexport CSVMGR_LOG_LEVEL={{ CSVMGR_LOG_LEVEL }}
+            \nexport TBCLI_LOG_LVL={{ CSVMGR_LOG_LEVEL }}
+            \nexport TBCLI_LOG_DIR=$CSVMGR_HOME/instance/$CSVMGR_SID/log
+			\n#################### end CSVMGR ENV################", after: "EOF" }
+  when: ifbashrc.stat.exists == True
+
+#- name: if set env in profile
+#  stat:
+#    path="{{ user_home,stdout }}/.profile"
+#  register: prof
+
+#- name: Set env in bashrc
+#  lineinfile:
+#    dest: "{{ user_home.stdout }}/.profile"
+#    line: "{{ item.line }}"
+#    insertafter: "{{ item.after }}"
+#  with_items:
+#    - { line: "###################add TIBERO ENV################
+#            \n####################add CSVMGR ENV################
+#                        \nexport CSVMGR_HOME={{ CSVMGR_HOME }}
+#                        \nexport LD_LIBRARY_PATH=$CSVMGR_HOME/lib:$CSVMGR_HOME/client/lib
+#            \nexport CSVMGR_SID={{ CSVMGR_SID }}
+#            \nexport CSVMGR_IPADDR={{ CSVMGR_IPADDR }}
+#            \nexport CSVMGR_PORT={{ CSVMGR_PORT }}
+#            \nexport CSVMGR_META_DB_NAME={{ CSVMGR_META_DB_NAME }}
+#            \nexport CSVMGR_META_DB_USER={{ CSVMGR_META_DB_USER }}
+#            \nexport CSVMGR_META_DB_PWD={{ CSVMGR_META_DB_PWD }}
+#            \nexport CSVMGR_LOG_DIR=$CSVMGR_HOME/instance/$CSVMGR_SID/log
+#            \nexport CSVMGR_LOG_LEVEL={{ CSVMGR_LOG_LEVEL }}
+#            \n#################### end CSVMGR ENV################", after: "EOF" }
+#  when: prof.stat.exists == False

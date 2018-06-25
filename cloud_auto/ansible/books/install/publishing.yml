@@ -1,0 +1,8 @@
+---
+- name: Publshing apps to hosts
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+  roles:
+    - publishing
+  

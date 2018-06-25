@@ -1,0 +1,9 @@
+---
+
+- name: Get sysmanager agent log
+  hosts: '{{ hosts }}'
+  remote_user: '{{ user }}'
+  vars_files:
+    - "../../vars/external_vars.yml"
+  roles:
+    - sysagent_getlog

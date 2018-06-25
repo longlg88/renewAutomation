@@ -1,0 +1,11 @@
+---
+## ansible vars
+ansi_path: "{{ (ansible_env|default({})).PATH|default('') }}"
+
+## tibero vars
+tb_home: "{{ ansible_env.HOME }}/tibero6"
+tb_sid: tibero
+SMGRID: smgr
+SMGRPW: smgr
+SMEVENTID: sm7_event_db
+SMEVENTPW: sm7_event_db

@@ -1,0 +1,14 @@
+---
+- name: Init ansible home
+  hosts: '{{ hosts }}'
+
+- name: RUN Cloud Master run
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+    - "../../vars/db_config.yml"
+    - "../../vars/master_po7_vars.yml"
+    - "../../vars/master_domain-config.yml"
+
+  roles:
+    - master_run

@@ -1,0 +1,53 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1 "
+  register: user_home
+
+- name: find os version
+  shell: "cat /etc/issue.net"
+  register: os_version
+
+## IAAS bridge clear
+- name: copy gen bridge clear setting shell
+  copy: src=../../../files/gen_iaasclear.sh dest={{ user_home.stdout }}/automation mode=0755
+  when: os_version.stdout == "Ubuntu 16.04.3 LTS"
+  become: true
+
+- name: gen bridge clear
+  shell: "nohup {{ user_home.stdout }}/automation/gen_iaasclear.sh >> log"
+  when: os_version.stdout == "Ubuntu 16.04.3 LTS"
+  become: true
+
+- name: chmod 755
+  shell: "chmod 755 {{ user_home.stdout }}/iaasclear.sh"
+  when: os_version.stdout == "Ubuntu 16.04.3 LTS"
+  become: true
+
+- name: execute shell
+  shell: "nohup {{ user_home.stdout }}/iaasclear.sh >> log"
+  when: os_version.stdout == "Ubuntu 16.04.3 LTS"
+  become: true
+
+## IAAS LITE bridge clear
+- name: copy original netplan file
+  shell: "cp {{ user_home.stdout }}/automation/netplan/01-netcfg.yaml /etc/netplan/"
+  when: os_version.stdout == "TmaxLinux 4.0"
+  become: true
+
+- name: copy bridge clear shell
+  copy: src=../../../files/bridge_clear.sh dest={{ user_home.stdout }}/automation mode=0755
+  when: os_version.stdout == "TmaxLinux 4.0"
+  become: true
+
+- name: change parameters
+  replace:
+    dest: "{{ user_home.stdout }}/automation/bridge_clear.sh"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@SETTING_INTERFACE@@', rep: '{{ SETTING_INTERFACE }}' }
+
+- name: execute bridge clear shell
+  shell: "{{ user_home.stdout }}/automation/bridge_clear.sh"
+  when: os_version.stdout == "TmaxLinux 4.0"
+  become: true

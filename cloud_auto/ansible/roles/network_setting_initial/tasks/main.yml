@@ -1,0 +1,54 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: find os version
+  shell: "cat /etc/issue.net"
+  register: os_version
+
+- name: make dir insert
+  file: path={{ user_home.stdout }}/prozone_installer/ansible/files/sql_script/insert/ state=directory
+
+- name: Execute make_interfaces.py for IaaS SDN version & Ubuntu 16.04 & TmaxLinux
+  command: ./make_interfaces.py -n all
+  args:
+    chdir: "{{ user_home.stdout }}/cloud_auto"
+  when: IAAS_VERSION == "IAAS" and os_version.stdout == "Ubuntu 16.04.3 LTS" or os_version.stdout == "TmaxLinux 4.0"
+
+- name: Execute SDN_make_interfaces.py for IaaS SDN version
+  command: ./make_interfaces.py
+  args:
+    chdir: "{{ user_home.stdout }}/prozone_installer/"
+  when: TCN_SDN_RUN == "ON"
+
+- name: Execute noSDN_make_interfaces.py for IaaS noSDN version
+  command: ./noSDN_make_interfaces.py
+  args:
+    chdir: "{{ user_home.stdout }}/prozone_installer/"
+  when: TCN_SDN_RUN == "OFF"
+
+
+#######
+#- name: Chmod 755 to shell script
+#  file: path={{ user_home.stdout }}/automation/netplan/* mode=0755
+
+#- name: Check if 01-netcfg.yaml is exists
+#  stat: 
+#    path: "{{ user_home.stdout }}/automation/netplan/01-netcfg.yaml"
+#  register: isNetplan
+
+#- name: Copy original netplan file if isNetplan is False
+#  shell: "cp /etc/netplan/01-netcfg.yaml {{ user_home.stdout }}/automation/netplan/"
+#  when: isNetplan.stat.exists == False
+
+#- name: Copy noSDN_gen_01-* file to netplan
+#  shell: "cp {{ user_home.stdout }}/automation/netplan/noSDN_gen_01-* /etc/netplan/01-netcfg.yaml"
+
+#- name: modprobe 8021q
+#  shell: "modprobe 8021q"
+
+#- name: netplan apply
+#  shell: netplan --debug apply
+
+#- name: execute shell script

@@ -1,0 +1,71 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: Make main directory(ALL)
+  file: path={{ user_home.stdout }}/automation state=directory
+
+- name: Make main recursive directory(ALL)
+  file: path={{ user_home.stdout }}/automation/{{ item }} state=directory
+  with_items:
+    - initial
+    - log
+    - netplan
+
+- name: mkdir po7 directory
+  file: path={{ user_home.stdout }}/{{ item }} state=directory
+  with_items:
+    - po7
+    - cmd
+  
+#- name: Copy initialize shell
+#  copy: src=../../../files/init_ubuntu.sh dest={{ user_home.stdout }}/init.sh mode=0755
+#  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Tmaxlinux" and aptInstall == "yes"
+
+#- name: Execute initialize shell
+#  shell: "{{ user_home.stdout }}/init.sh >> {{ user_home.stdout }}/automation/log/init_log"
+#  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Tmaxlinux" and aptInstall == "yes"
+
+- name: Copy hosts package for install
+  copy: src=../../../files/binary/package/all dest={{ user_home.stdout }}/automation/initial/
+  when: aptInstall == "no" and ansible_distribution == "Ubuntu"
+
+- name: Execute install shell
+  shell: "{{ user_home.stdout }}/automation/initial/all/install.sh"
+  when: aptInstall == "no" and ansible_distribution == "Ubuntu"
+
+- name: Setting history
+  shell: echo 'HISTTIMEFORMAT="[%Y-%m-%d-%H:%M:%S] "' >> /etc/profile
+  become: true
+
+- name: Setting history2
+  shell: "echo 'export HISTTIMEFORMAT' >> /etc/profile"
+  become: true
+
+- name: source history format
+  shell: "source /etc/profile"
+  args:
+    executable: /bin/bash
+  become: true
+  
+- name: hostname change
+  shell: "hostnamectl set-hostname {{ inventory_hostname }}"
+#- name: Install Chrony
+#  package:
+#    name: 'chrony'
+#    state: 'present'
+#  become: true
+
+#- name: Configure Chrony
+#  template:
+#    src=../../../files/chrony.conf.j2 dest=/etc/chrony/chrony.conf
+#  notify: 
+#    - 'restart chrony'
+#  become: true
+#
+#- name: Service Chrony
+#  service:
+#    name: '{{ chrony_service_name }}'
+#    enabled: '{{ chrony_service_enabled }}'
+#    state: '{{ chrony_service_state }}'

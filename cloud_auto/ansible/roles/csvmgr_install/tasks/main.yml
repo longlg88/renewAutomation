@@ -1,0 +1,5 @@
+---
+- include: init.yml
+- include: setenv.yml
+- include: gtar_binary.yml
+- include: run.yml

@@ -1,0 +1,20 @@
+---
+- name: Make main recursive directory(Auth server)
+  file: path=/{{ user }}/automation/{{ item }} state=directory
+  with_items:
+    - auth
+
+- name: Copy po7 tar
+  copy: src=../../../files/binary/{{ po_image_name }}.tar dest=/{{ user }}/automation/auth/{{ po_image_name }}.tar owner={{ user }} mode=0644
+
+- name: Copy proobject tar
+  copy: src=../../../files/binary/proobject7.tar.gz dest=/{{ user }}/automation/auth/proobject7.tar.gz owner={{ user }} mode=0644
+
+- name: copy untar proobject7 shell script
+  copy: src=../../../files/untar_po7.sh dest=/{{ user }}/automation/auth owner={{ user }} mode=0755
+
+- name: untar proobject7.tar.gz
+  shell: /{{ user }}/automation/auth/untar_po7.sh
+
+- name: copy po7 runtime binary
+  copy: src=../../../files/binary/{{ auth_runtime }}.war dest=/{{ user }}/automation/auth/proobject7/po7.war owner={{ user }} mode=0755

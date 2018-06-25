@@ -1,0 +1,16 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: storage mount for tca_agent line in files /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    regexp: 'str.mount.tca'
+    line: '{{ s_tca_lvm_group_name }} /root/tca_agent xfs defaults,pquota 0 1'
+
+- name: storage mount for db mount line in files /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    regexp: 'str.mount.db'
+    line: '{{ s_db_lvm_group_name }} /mnt/tca_agent/xfs_mount xfs defaults,pquota 0 1'

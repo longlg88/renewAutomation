@@ -1,0 +1,11 @@
+{
+    "dto":{
+        "hostUuid":"29d97a85",
+        "totalCpu":16,
+        "totalMemory":32000,
+        "name":"Compute3-7",
+        "description":"Compute3-7 Matching",
+        "accessName":"root",
+        "accessAuth":"tmax@23"
+    }
+}

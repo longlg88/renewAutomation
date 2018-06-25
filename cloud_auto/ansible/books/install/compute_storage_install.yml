@@ -1,0 +1,7 @@
+---
+- name: Install compute/storage host package
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/external_vars.yml"
+  roles:
+    - compute_storage_install

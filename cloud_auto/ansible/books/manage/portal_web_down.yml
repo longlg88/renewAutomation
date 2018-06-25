@@ -1,0 +1,19 @@
+---
+- name: Init ansible home
+  hosts: '{{ hosts }}'
+  remote_user: root
+
+- name: Portal web down
+  hosts: '{{ hosts }}'
+  remote_user: '{{ user }}'
+  environment:
+    JAVA_HOME: '{{ java_home }}'
+    JEUS_HOME: '{{ jeus_home }}'
+    PROOBJECT_HOME: '{{ proobject_home }}'
+    WEBTOBDIR: '{{ webtobdir }}'
+    PATH: '{{ java_home }}/bin:{{ webtobdir }}/bin:{{ ansi_path }}'
+    LD_LIBRARY_PATH: '{{ webtobdir }}/lib'
+  vars_files:
+    - "../../vars/webtob_vars.yml"
+  roles:
+    - portal_web_down

@@ -1,0 +1,11 @@
+---
+
+- name: Copy clean compute node shell
+  copy: src=../../../files/init_compute_linux_node.sh dest=/{{ user }}/automation/compute/clean.sh owner={{ user }} mode=0755
+  when: ansible_distribution == "Ubuntu"
+
+- name: Execute clean compute node shell
+  shell: /{{ user }}/automation/compute/clean.sh >> //{ user }}/automation/log/progress
+
+- name: Reboot
+  shell: /sbin/reboot

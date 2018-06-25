@@ -1,0 +1,8 @@
+---
+
+## ex) 1000G
+com_lvm_size: ""
+stg_hdd_container_lvm_size: ""
+stg_hdd_lvm_size: ""
+stg_ssd_lvm_size: ""
+db_ssd_lvm_size: "" ##stg_ssd_lvm * 7

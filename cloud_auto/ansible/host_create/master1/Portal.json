@@ -1,0 +1,24 @@
+{
+    "dto":{
+        "hostName":"Portal",
+        "hostIp":"172.31.1.3",
+        "totalCpu":16,
+        "totalMemory":32000,
+        "totalDisk":300,
+        "pooledDisk":300,
+        "hostType":"Master",
+        "hypervisorType":"LXC",
+        "cpuArch":"x86_64",
+        "availabilityZone":"",
+        "status":"Running",
+        "hostPmac":"fe:b0:c1:06",
+        "frontendPort":"eno1.2",
+        "backendPort":"eno1.3",
+        "managementPort":"eno1",
+        "switchDpid":2038033768499425473,
+        "switchPort":6,
+        "accessName":"root",
+        "accessAuth":"tmax@23",
+        "active":true
+    }
+}

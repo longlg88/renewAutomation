@@ -1,0 +1,10 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: compute mount line in files /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    regexp: 'com.mount'
+    line: '{{ c_tca_lvm_group_name }} /root/tca_agent xfs defaults,pquota 0 1'

@@ -1,0 +1,11 @@
+---
+- name: Make recursive directory
+  file: path={{ user_home.stdout }}/automation/{{ item }} state=directory
+  with_items:
+    - portal_web
+ 
+- name: Copy webtob image
+  copy: src=../../../files/binary/{{ webtob_name }} dest={{ user_home.stdout }}/automation/portal_web/{{ webtob_name }} mode=0755
+ 
+#- name: Copy setenv
+#  copy: src=../../../files/webtob_setenv dest={{ user_home.stdout }}/automation/portal_web/ mode=0755 

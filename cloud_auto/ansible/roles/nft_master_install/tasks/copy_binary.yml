@@ -1,0 +1,33 @@
+---
+
+- name: make directory
+  file: path={{ jeus_home }} state=directory
+  become: true
+
+- name: make tmp directory
+  file: path={{ user_home.stdout}}/tmp/ state=directory
+  become: true
+   
+
+- name: copy license
+  copy: src=../../../files/jeus-license/{{ item }}
+        dest={{ user_home.stdout }}/tmp/
+  with_items:
+        - "license"
+  become: true
+
+- name: gtar jeus
+  unarchive:
+    src=../../../files/binary/{{ jeus_version }}
+    dest={{ jeus_home }}
+  become: true
+
+- name: copy license
+  command: "cp {{ user_home.stdout }}/tmp/license {{ jeus_home }}/license/"
+  register: copy_lic_result
+  become: true
+
+
+- name: copy tibero6 jdbc
+  copy: src=../../../files/binary/tibero6-jdbc.jar dest={{ jeus_home }}/lib/datasource/
+  become: true

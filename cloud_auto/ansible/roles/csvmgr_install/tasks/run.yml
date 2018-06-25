@@ -1,0 +1,34 @@
+---
+- name: Make recursive directory(Volume manager)
+  file: path={{ user_home.stdout }}/automation/{{ item }} state=directory
+  with_items:
+    - csvmgr
+
+- name: mkdir po7 directory
+  file: path={{ user_home.stdout }}/{{ item }} state=directory
+  with_items:
+    - cmd
+
+- name: mv tibero6 to tibero6_csvmgr
+  shell: "mv {{ user_home.stdout }}/temp_tibero/tibero6 {{ user_home.stdout }}/tibero6_csvmgr"
+  become: true
+
+- name: copy volume manager binary
+#  copy: src=../../../files/binary/csvmgr dest={{ user_home.stdout }}/automation/csvmgr/ mode=0755
+  shell: "cp {{ user_home.stdout }}/tibero6_csvmgr/client/bin/csvmgr {{ user_home.stdout }}/automation/csvmgr/"
+
+- name: move set_dbenv.sh to automation/csvmgr/..
+  shell: "cp {{ user_home.stdout }}/set_dbenv.sh {{ user_home.stdout }}/automation/csvmgr/set_csvmgr.sh"
+
+- name: copy set db env shell to run csvmgr shell
+  shell: "cp {{ user_home.stdout }}/set_dbenv.sh {{ user_home.stdout }}/cmd/run_csvmgr.sh"
+
+- name: add run csvmgr
+  shell: "echo '\n{{ user_home.stdout }}/automation/csvmgr/csvmgr -b' >> {{ user_home.stdout }}/cmd/run_csvmgr.sh"
+
+- name: chmod 755 to run_csvmgr.sh
+  file: path={{ user_home.stdout }}/cmd/run_csvmgr.sh mode=0755
+
+- name: run csvmgr
+  shell: "{{ user_home.stdout }}/cmd/run_csvmgr.sh"
+  become: true

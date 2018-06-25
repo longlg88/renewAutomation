@@ -1,0 +1,361 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import json
+import paramiko
+import math
+import shutil
+import optparse
+from multiprocessing import Process
+from collections import OrderedDict
+
+
+sys.path.append('/root/cloud_auto/')
+import host
+import utils
+
+json_dto = OrderedDict()
+
+## parsing value info files
+class valueInfo:
+    
+    def __init__(self):
+        self.c_names=[]
+        self.c_auths=[]
+        self.s_names=[] 
+        self.s_auths=[]
+        self.m_names=[]
+        self.m_auths=[]
+
+        self.c_accounts=[]
+        self.s_accounts=[]
+        self.m_accounts=[]
+
+        self.net_name=""
+        self.sn_name=""
+        self.sn_ipAddr=""
+        self.sn_netmask=""
+        self.sn_gateway=""
+        self.sn_dns=""
+        self.sn_isLb=""
+    
+    
+    def setting(self):
+        f=open("./value_info")
+        lines=f.readlines()
+        for x in range(len(lines)):
+            if lines[x].startswith("#") == False:
+                if 'C_accessName' in lines[x]:
+                    c_name=lines[x].split("=")[-1].replace('\n','')
+                    self.c_accounts.append(c_name)
+                elif 'C_accessAuth' in lines[x]:
+                    c_auth = lines[x].split("=")[-1].replace('\n','')
+                    self.c_accounts.append(c_auth)
+                elif 'S_accessName' in lines[x]:
+                    s_name = lines[x].split("=")[-1].replace('\n','')
+                    self.s_accounts.append(s_name)
+                elif 'S_accessAuth' in lines[x]:
+                    s_auth = lines[x].split("=")[-1].replace('\n','')
+                    self.s_accounts.append(s_auth)
+                elif 'M_accessName' in lines[x]:
+                    m_name = lines[x].split("=")[-1].replace('\n','')
+                    self.m_accounts.append(m_name)
+                elif 'M_accessAuth' in lines[x]:
+                    m_auth = lines[x].split("=")[-1].replace('\n','')
+                    self.m_accounts.append(m_auth)
+                elif 'net_name' in lines[x]:
+                    net_name = lines[x].split("=")[-1].replace('\n','')
+                    self.net_name=net_name
+                elif 'sn_name' in lines[x]:
+                    sn_name = lines[x].split("=")[-1].replace('\n','')
+                    self.sn_name=sn_name
+                elif 'sn_ipAddr' in lines[x]:
+                    sn_ipAddr = lines[x].split("=")[-1].replace('\n','')
+                    self.sn_ipAddr=sn_ipAddr
+                elif 'sn_netmask' in lines[x]:
+                    sn_netmask = lines[x].split("=")[-1].replace('\n','')
+                    self.sn_netmask=sn_netmask
+                elif 'sn_gateway' in lines[x]:
+                    sn_gateway = lines[x].split("=")[-1].replace('\n','')
+                    self.sn_gateway=sn_gateway
+                elif 'sn_dns' in lines[x]:
+                    sn_dns = lines[x].split("=")[-1].replace('\n','')
+                    self.sn_dns=sn_dns
+                elif 'sn_isLb' in lines[x]:
+                    sn_isLb = lines[x].split("=")[-1].replace('\n','')
+                    self.sn_isLb=sn_isLb
+
+
+## extract remote host cpu info
+def cpu_info(ssh):
+	stdin, stdout, stderr = ssh.exec_command("sudo -S grep -c processor /proc/cpuinfo")
+	cpu_parsing = stdout.readlines()
+	cpu_data = ''.join(data.replace('\n','') for data in cpu_parsing)
+	return int(cpu_data)
+
+## extract remote host memory info
+def mem_info(ssh):
+	stdin, stdout, stderr = ssh.exec_command("sudo -S cat /proc/meminfo | grep MemFree")
+	mem_parsing = stdout.readlines()
+	mem_data = ''.join(data.replace('\n','') for data in mem_parsing)
+	mem_data = mem_data.replace('MemFree','')
+	mem_data = mem_data.replace(':','')
+	mem_data = mem_data.replace('kB','')
+	mem_data = mem_data.replace(' ','')
+	mem_data = math.floor(int(mem_data) / 1000)
+	return int(mem_data)
+
+## extract remote host disk info
+def disk_info(ssh):
+	stdin, stdout, stderr = ssh.exec_command("sudo -S df -P | grep -v ^Filesystem | grep -v ^none | grep -v ^zvolume| awk '{sum += $2} END { print sum/1024/1024; }'")
+	disk_parsing = stdout.readlines()
+	disk_data = ''.join(data.replace('\n','') for data in disk_parsing)
+	disk_data = math.floor(float(disk_data))
+	return int(disk_data)
+
+## make compute host json
+def make_compute(compute_dict, compute_num, ssh):
+	c_hit=0
+	value_info=valueInfo()
+	value_info.setting()
+	if len(value_info.c_accounts)/2 != compute_num:
+		print("value info's compute and host info's compute num is different. Please sync value_info & host_info")
+	else:
+		while(c_hit < compute_num):
+			## host info define
+			host_info_list = host.InfoList('/root/cloud_auto/host_info')
+			hostName = compute_dict[c_hit]
+			host_info = host_info_list.get_host(hostName)
+			hostIp = host_info.ifaceInfo_list[2].ipv4
+			ssh.connect(hostIp, look_for_keys=True)
+			hostPmac = host_info.ifaceInfo_list[0].pseudomac[:11]
+			frontendPort = host_info.ifaceInfo_list[0].vlan_raw_dev
+			backendPort = host_info.ifaceInfo_list[0].vlan_raw_dev
+			managementPort = host_info.ifaceInfo_list[0].vlan_raw_dev
+			switchDpid = host_info.ifaceInfo_list[0].switch_dpid
+			switchPort = host_info.ifaceInfo_list[0].switch_port
+			
+			accessName = value_info.c_accounts[c_hit*2]
+			accessAuth = value_info.c_accounts[c_hit*2+1]
+
+			totalCpu = cpu_info(ssh)
+			totalMemory = mem_info(ssh)
+			totalDisk = disk_info(ssh)
+			pooledDisk = totalDisk
+			computeTotalCpu = totalCpu
+			computeFreeCpu = totalCpu
+			computeTotalMemory = totalMemory
+			computeFreeMemory = totalMemory
+			c_hit = c_hit+1
+			dict_host = { 'hostName':hostName, 'hostIp':hostIp, 'hostType':'Compute', 'hypervisorType':'LXC', 'cpuArch':'x86_64', 'totalCpu':totalCpu, 'totalMemory':totalMemory, 'totalDisk':totalDisk, 'pooledDisk':pooledDisk, 'availabilityZone':'', 'status':'Running', 'hostPmac':hostPmac, 'frontendPort':frontendPort, 'backendPort':backendPort, 'managementPort':managementPort, 'switchDpid':switchDpid, 'switchPort':switchPort, 'accessName':accessName, 'accessAuth':accessAuth, 'description':'', 'meta':'', 'active':True, 'nodeType':1, 'computeTotalCpu':computeTotalCpu, 'computeFreeCpu':computeFreeCpu, 'computeTotalMemory':computeTotalMemory, 'computeFreeMemory':computeFreeMemory, 'storageTotalCpu':0, 'storageTotalMemory':0, 'storageTotalSize':0, 'storageFreeSize':0}
+			#print(dict_host)
+			json_dto["dto"]=dict_host
+			DIR_JSON="./json/compute/"
+			if not os.path.exists(DIR_JSON):
+				os.makedirs(DIR_JSON, exist_ok=True)
+			with open(DIR_JSON+hostName+'.json', 'w', encoding="utf-8") as make_file:
+				json.dump(json_dto, make_file, ensure_ascii=False, indent="\t", sort_keys=True)
+	ssh.close()
+
+## make storage host json
+def make_storage(storage_dict, storage_num, ssh):
+	s_hit=0
+	value_info=valueInfo()
+	value_info.setting()
+	if len(value_info.s_accounts)/2 != storage_num:
+		print("value info's storage and host info's storage num is different. Please sync value_info & host_info")
+	else:
+		while(s_hit < storage_num):
+			## host info define
+			host_info_list = host.InfoList('/root/cloud_auto/host_info')
+			s_hostName = storage_dict[s_hit]
+			s_host_info = host_info_list.get_host(s_hostName)
+			s_hostIp = s_host_info.ifaceInfo_list[2].ipv4
+			print(s_hostIp)
+			ssh.connect(s_hostIp, look_for_keys=True)
+			s_hostPmac = s_host_info.ifaceInfo_list[0].pseudomac[:11]
+			s_frontendPort = s_host_info.ifaceInfo_list[0].vlan_raw_dev
+			s_backendPort = s_host_info.ifaceInfo_list[0].vlan_raw_dev
+			s_managementPort = s_host_info.ifaceInfo_list[0].vlan_raw_dev
+			s_switchDpid = s_host_info.ifaceInfo_list[0].switch_dpid
+			s_switchPort = s_host_info.ifaceInfo_list[0].switch_port
+
+			s_accessName = value_info.s_accounts[s_hit*2]
+			s_accessAuth = value_info.s_accounts[s_hit*2+1]
+
+			s_totalCpu = cpu_info(ssh)
+			s_totalMemory = mem_info(ssh)
+			s_totalDisk = disk_info(ssh)
+			s_pooledDisk = s_totalDisk
+			s_storageTotalCpu = s_totalCpu
+			s_storageTotalMemory = s_totalMemory
+			s_storageTotalSize = s_totalDisk
+			s_storageFreeSize = s_totalDisk
+			s_hit = s_hit+1
+			s_dict_host = {'hostName':s_hostName, 'hostIp':s_hostIp, 'hostType':'Storage', 'hypervisorType':'LXC', 'cpuArch':'x86_64', 'totalCpu':s_totalCpu, 'totalMemory':s_totalMemory, 'totalDisk':s_totalDisk, 'pooledDisk':s_pooledDisk, 'availabilityZone':'', 'status':'Running', 'hostPmac':s_hostPmac, 'frontendPort':s_frontendPort, 'backendPort':s_backendPort, 'managementPort':s_managementPort, 'switchDpid':s_switchDpid, 'switchPort':s_switchPort, 'accessName':s_accessName, 'accessAuth':s_accessAuth, 'description':'', 'meta':'', 'active':True, 'nodeType':2, 'computeTotalCpu':0, 'computeFreeCpu':0, 'computeTotalMemory':0, 'computeFreeMemory':0, 'storageTotalCpu':s_storageTotalCpu, 'storageTotalMemory':s_storageTotalMemory, 'storageTotalSize':s_storageTotalSize, 'storageFreeSize':s_storageFreeSize}
+			#print(s_dict_host)
+			json_dto["dto"]=s_dict_host
+			DIR_JSON="./json/storage/"
+			if not os.path.exists(DIR_JSON):
+				os.makedirs(DIR_JSON, exist_ok=True)
+			with open(DIR_JSON+s_hostName+'.json', 'w', encoding="utf-8") as make_file:
+				json.dump(json_dto, make_file, ensure_ascii=False, indent="\t", sort_keys=True)
+	ssh.close()
+
+## make master host json
+def make_master(master_dict, master_num, ssh):
+	m_hit=0
+	value_info=valueInfo()
+	value_info.setting()
+	if len(value_info.m_accounts)/2 != master_num:
+		print("value info's storage and host info's storage num is different. Please sync value_info & host_info")
+	else:
+		while(m_hit < master_num):
+			## host info define
+			host_info_list = host.InfoList('/root/cloud_auto/host_info')
+			m_hostName = master_dict[m_hit]
+			m_host_info = host_info_list.get_host(m_hostName)
+			m_hostIp = m_host_info.ifaceInfo_list[2].ipv4
+			ssh.connect(m_hostIp, look_for_keys=True)
+			m_hostPmac = m_host_info.ifaceInfo_list[0].pseudomac[:11]
+			m_frontendPort = m_host_info.ifaceInfo_list[0].vlan_raw_dev
+			m_backendPort = m_host_info.ifaceInfo_list[0].vlan_raw_dev
+			m_managementPort = m_host_info.ifaceInfo_list[0].vlan_raw_dev
+			m_switchDpid = m_host_info.ifaceInfo_list[0].switch_dpid
+			m_switchPort = m_host_info.ifaceInfo_list[0].switch_port
+
+			m_accessName = value_info.m_accounts[m_hit*2]
+			m_accessAuth = value_info.m_accounts[m_hit*2+1]
+
+			m_totalCpu = cpu_info(ssh)
+			m_totalMemory = mem_info(ssh)
+			m_totalDisk = disk_info(ssh)
+			m_pooledDisk = m_totalDisk
+			m_computeTotalCpu = m_totalCpu
+			m_computeFreeCpu = m_totalCpu
+			m_computeTotalMemory = m_totalMemory
+			m_computeFreeMemory = m_totalMemory
+			m_hit = m_hit+1
+			m_dict_host = {'hostName':m_hostName, 'hostIp':m_hostIp, 'hostType':'Master', 'hypervisorType':'LXC', 'cpuArch':'x86_64', 'totalCpu':m_totalCpu, 'totalMemory':m_totalMemory, 'totalDisk':m_totalDisk, 'pooledDisk':m_pooledDisk, 'availabilityZone':'', 'status':'Running', 'hostPmac':m_hostPmac, 'frontendPort':m_frontendPort, 'backendPort':m_backendPort, 'managementPort':m_managementPort, 'switchDpid':m_switchDpid, 'switchPort':m_switchPort, 'accessName':m_accessName, 'accessAuth':m_accessAuth, 'description':'', 'meta':'', 'active':True, 'nodeType':0, 'computeTotalCpu':m_computeTotalCpu, 'computeFreeCpu':m_computeFreeCpu, 'computeTotalMemory':m_computeTotalMemory, 'computeFreeMemory':m_computeFreeMemory, 'storageTotalCpu':0, 'storageTotalMemory':0, 'storageTotalSize':0, 'storageFreeSize':0}
+			#print(m_dict_host)
+			json_dto["dto"]=m_dict_host
+			DIR_JSON="./json/master/"
+			if not os.path.exists(DIR_JSON):
+				os.makedirs(DIR_JSON, exist_ok=True)
+			with open(DIR_JSON+m_hostName+'.json', 'w', encoding="utf-8") as make_file:
+				json.dump(json_dto, make_file, ensure_ascii=False, indent="\t", sort_keys=True)
+	ssh.close()
+
+## construct all host json
+def host_json():
+	try:
+		## ssh connection start
+		ssh = paramiko.SSHClient()
+		ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+		## read host name
+		f=open("/root/cloud_auto/host_info")
+		lines=f.readlines()
+		host_names = [s.split(":")[-1].replace('\n','') for s in lines if 'host_name' in s]
+		
+		compute_num=0
+		storage_num=0
+		master_num=0
+		compute_dict=[]
+		storage_dict=[]
+		master_dict=[]
+		
+		for x in range(0, len(host_names)):
+			hostName=host_names[x]
+
+			if hostName.startswith('Compute_') == True:
+				compute_dict.append(hostName)
+			elif hostName.startswith('Storage_') == True:
+				storage_dict.append(hostName)
+			elif hostName.startswith('Master_') == True:
+				master_dict.append(hostName)
+
+			compute_num = compute_num + hostName.count('Compute_')
+			storage_num = storage_num + hostName.count('Storage_')
+			master_num = master_num + hostName.count('Master_')
+
+		print(compute_num, storage_num, master_num)
+		
+		
+		proc_make_compute = Process(target=make_compute, args=(compute_dict, compute_num, ssh))
+		proc_make_compute.start()
+		proc_make_compute.join()
+		proc_make_storage = Process(target=make_storage, args=(storage_dict, storage_num, ssh))
+		proc_make_storage.start()
+		proc_make_storage.join()
+		proc_make_master = Process(target=make_master, args=(master_dict, master_num, ssh))
+		proc_make_master.start()
+		proc_make_master.join()
+
+		f.close()
+		ssh.close()
+	
+	except KeyboardInterrupt:
+		print("\nKeyboard interrupt... please re-execute program")
+		sys.exit()
+
+def network_json():
+	value_info=valueInfo()
+	value_info.setting()
+	net_name=value_info.net_name
+	dict_network = {'name':net_name, 'type':1}
+	json_dto["dto"]=dict_network
+	DIR_JSON='./json/network'
+	if not os.path.exists(DIR_JSON):
+		os.makedirs(DIR_JSON, exist_ok=True)
+	with open(DIR_JSON+"/"+"network_front"+'.json', 'w', encoding="utf-8") as make_file:
+		json.dump(json_dto, make_file, ensure_ascii=False, indent="\t", sort_keys=True)
+
+def subnet_json():
+	value_info=valueInfo()
+	value_info.setting()
+	sn_name = value_info.sn_name
+	sn_ipAddr = value_info.sn_ipAddr
+	sn_netmask = value_info.sn_netmask
+	sn_gateway = value_info.sn_gateway
+	sn_dns = value_info.sn_dns
+	sn_isLb=value_info.sn_isLb
+	dict_subnet = {'name':sn_name, 'ipAddr':sn_ipAddr, 'netmask':sn_netmask, 'gateway':sn_gateway, 'dns':sn_dns, 'isLb':sn_isLb}
+	json_dto["dto"]=dict_subnet
+	DIR_JSON='./json/subnet'
+	if not os.path.exists(DIR_JSON):
+		os.makedirs(DIR_JSON, exist_ok=True)
+	with open(DIR_JSON+"/"+"subnet_"+sn_name+'.json','w',encoding="utf-8") as make_file:
+		json.dump(json_dto, make_file, ensure_ascii=False, indent="\t", sort_keys=True)
+
+
+if __name__ == "__main__":
+	parser=optparse.OptionParser()
+	parser.add_option('-o', '--option', dest='opt', default= None, help='all = Host, Network, Subnet all make json         select = Host, Network, Subnet choice to make json')
+	(options, args) = parser.parse_args()
+	if options.opt == None:
+		print("see init_make_json help ex) ./init_make_json -h")
+	if options.opt == "all":
+#		print("all")
+		host_json()
+		network_json()
+		subnet_json()
+	if options.opt == "select":
+		while True:
+			try:
+				select_json_type = input("\nselect json type 1: Host 2: Network 3: Subnet q: quit \n")
+				if select_json_type == '1':
+					host_json()
+				elif select_json_type == '2':
+					network_json()
+				elif select_json_type == '3':
+					subnet_json()
+				elif select_json_type == 'q':
+					sys.exit()
+				else:
+					sys.exit()
+		
+			except KeyboardInterrupt:
+				print("\nKeyboard interrupt... please re-execute program")
+				sys.exit()

@@ -1,0 +1,22 @@
+{
+    "dto":{
+        "tenantUuid":"0739ec6d",
+        "tenantName":"CSP-tenant",
+        "projectUuid":"01bea881",
+        "projectName":"CSP-project",
+        "uploaderUuid":"0",
+        "uploaderName":"CSP-user",
+        "imageName":"@@IMAGE_NAME_2@@",
+        "imageTag":[{"text" : "@@tibero_tag@@"}],
+        "description":"this is cloud_tcs_tibero image",
+        "imageType":"DB",
+        "productName":"@@image_registry@@:5000/@@IMAGE_NAME_2@@",
+        "productVersion":"@@tibero_tag@@",
+        "shared":"Public",
+        "imageFrom":"Docker",
+        "supportOS":"LINUX",
+        "imageClassification":"Container",
+        "defaultCheck":"Y",
+        "serviceType":"2"
+    }
+}

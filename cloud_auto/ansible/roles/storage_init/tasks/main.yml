@@ -1,0 +1,35 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: Make compute directory
+  file: path={{ user_home.stdout }}/automation/{{ item }} state=directory
+  with_items:
+    - storage_init
+
+- name: Copy lxc install shell
+  copy: src=../../../files/lxc.sh dest={{ user_home.stdout }}/automation/storage_init/lxc.sh mode=0755
+
+#- name: install lxc
+#  shell: "sh /{{ user }}/automation/storage_init/lxc.sh"
+#  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Tmaxlinux"
+
+- name: copy tca-storage file
+  copy: src=../../../files/tca-storage dest=/etc/init.d/tca-storage
+
+- name: replace user_home in tca-compute
+  replace:
+    dest: "/etc/init.d/tca-storage"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@user_home@@', rep: '/mnt' }
+
+- name: Copy setting shell
+  copy: src=../../../files/storage_setting.sh dest={{ user_home.stdout }}/automation/storage_init/setting.sh mode=0755
+
+- name: Setting shell
+  shell: "sh {{ user_home.stdout }}/automation/storage_init/setting.sh"
+
+

@@ -1,0 +1,4 @@
+---
+- include: setenv.yml
+- include: copy_binary.yml
+- include: run.yml

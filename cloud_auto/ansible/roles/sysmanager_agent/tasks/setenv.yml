@@ -1,0 +1,22 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }'"
+  register: user_home
+
+- name: if set env in bashrc
+  stat:
+    path="{{ user_home.stdout }}/.bashrc"
+  register: ifbashrc
+
+- name: Set env in bashrc
+  lineinfile:
+    dest: "{{ user_home.stdout }}/.bashrc"
+    line: "{{ item.line }}"
+    backup: yes
+    insertafter: "{{ item.after }}"
+  with_items:
+    - { line: "################### TMAX SYSMANAGER AGENT ENV ########################
+               \nsource {{ user_home.stdout }}/sys_agent/setenv
+			   \n################# TMAX SYSMANAGER AGENT ENV end #####################",
+after: "EOF" }
+  when: ifbashrc.stat.exists == True

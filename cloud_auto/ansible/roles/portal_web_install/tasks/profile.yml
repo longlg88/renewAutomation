@@ -1,0 +1,22 @@
+---
+- name: profile bashrc
+  stat:
+    path="{{ user_home.stdout }}/.profile"
+  register: bprof
+
+- name: Adding the path in the Profile(.bashrc) files
+  lineinfile:
+    dest: "{{ user_home.stdout }}/.profile"
+    line: "{{ item.line }}"
+    backup: yes
+    insertafter: "{{ item.after }}"
+  with_items:
+    - { line: "####################################
+              \nexport JAVA_HOME=/usr/java8_64
+              \nexport JEUS_HOME={{ user_home.stdout }}/jeus8
+              \nexport WEBTOBDIR={{ user_home.stdout }}/webtob
+              \n
+              \nexport PATH=$JAVA_HOME/bin:$WEBTOBDIR/bin:$PATH
+              \nexport LD_LIBRARY_PATH=$WEBTOBDIR/lib
+              \n#######################################", after: "EOF" }
+  when: bprof.stat.exists == True

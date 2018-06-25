@@ -1,0 +1,24 @@
+---
+- name: Copy docker install shell on ubuntu
+  copy: src=../../../files/docker_install_ubuntu.sh dest=/{{ user }}/automation/initial/docker_install.sh owner={{ user }} mode=0755
+
+- name: Execute docker install shell
+  shell: /{{ user }}/automation/initial/docker_install.sh
+
+- name: make directory recursive about docker image
+  file: path=/{{ user }}/automation/docker_image state=directory
+
+- name: make directory recursive about docker image(cont.)
+  file: path=/{{ user }}/automation/docker_image/portal state=directory
+
+- name: copy portal docker image
+  copy: src=../../../files/binary/docker_portal_install.tar dest=/{{ user }}/automation/docker_image/portal/ mode=0755
+
+- name: Execute docker load image
+  shell: docker load < /root/automation/docker_image/portal/docker_portal_install.tar
+
+#- name: copy push portal docker image shell
+#  copy: src=../../../files/docker_portal_install.sh dest=/{{ user }}/automation/docker_image/portal/ mode=0755
+
+#- name: Execute portal docker image shell
+#  copy: /{{ user }}/automation/docker_image/portal/docker_portal_install.sh

@@ -1,0 +1,62 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: install init pkg From Ubuntu
+  apt:
+    name: '{{ item }}'
+  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Tmaxlinux"
+  register: utpkg_result
+  with_items:
+    - "gcc"
+    - "g++"
+    - "libstdc++5"
+    - "libaio1"
+    - "libaio-dev"
+  become: true
+
+- name: install init pkg from CentOS
+  yum:
+    name: "{{ item }}"
+  when: ansible_distribution == "CentOS"
+  register: copkg_result
+  with_items:
+    - "gcc"
+    - "gcc-c++"
+    - "compat-libstdc++-33"
+    - "libaio"
+    - "libaio-devel"
+  become: true
+
+- name: Make main recursive directory(DB)
+  file: path={{ user_home.stdout }}/automation/{{ item }} state=directory
+  with_items:
+    - db_files
+    - temp
+  become: true
+
+- name: make directory
+  file: path={{ java_home }} state=directory
+  become: true
+
+- name: make temp directory
+  file: path={{ user_home.stdout }}/automation/temp/ state=directory
+  become: true
+
+- name: gtar java
+  unarchive:
+    extra_opts="--strip-components=1"
+    src=../../../files/binary/java/{{ java_version }}/jdk-8u121-linux-x64.tar.gz
+    dest={{ java_home }}
+  with_fileglob:
+    - ../../../files/binary/java/{{ java_version }}/*
+  become: true
+
+
+- name: correct java version selected
+  alternatives:
+    name: java
+    path: "{{ java_home }}/bin/java"
+    link: /usr/bin/java
+  become: true

@@ -1,0 +1,21 @@
+source: |
+   {% if remote_os_name == 'windows' and remote_os_arch == 'x86' %}
+   win32
+   {%- endif %}
+   {% if remote_os_name == 'windows' and remote_os_arch == 'x64' %}
+   win64
+   {%- endif %}
+   {% if remote_os_name == 'windows' and remote_os_arch == 'amd64' %}
+   win64
+   {%- endif %}
+   {% if remote_os_name == 'Linux' and remote_os_arch == 'x86' %}
+   linux_x86_32
+   {%- endif %}
+   {% if remote_os_name == 'Linux' and remote_os_arch == 'i386' %}
+   linux_x86_32
+   {%- endif %}
+   {% if remote_os_name == 'Linux' and remote_os_arch == 'x86_64' %}
+   linux_x86_64 {%- endif %}
+   {% if remote_os_name == 'Linux' and remote_os_arch == 'amd64' %}
+   linux_x86_64
+   {%- endif %}

@@ -1,0 +1,14 @@
+---
+- name: Setting bridge setting for I1 model
+  hosts: '{{ hosts }}'
+  environment:
+    SETTING_NETMASK: '{{ SETTING_NETMASK }}'
+    SETTING_GATEWAY: '{{ SETTING_GATEWAY }}'
+    SETTING_GATEWAY_NET: '{{ SETTING_GATEWAY_NET }}'
+    SETTING_INTERFACE: '{{ SETTING_INTERFACE }}'
+    SETTING_CIDR: '{{ SETTING_CIDR }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+    - "../../vars/bridge_setting_lite.yml"
+  roles:
+    - bridge_setting

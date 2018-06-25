@@ -1,0 +1,5 @@
+---
+- include: image_copy.yml
+- include: image_push.yml
+- include: image_json_copy.yml
+- include: image_import.yml

@@ -1,0 +1,11 @@
+---
+- name: copy portal web down shell
+  copy: src=../../../files/portal_web_down.sh dest=/{{ user }}/ mode=0755
+
+- name: execute portal web down shell
+  shell: "nohup /{{ user }}/portal_web_down.sh"
+  args:
+    warn: no
+    executable: "/bin/bash"
+  register: web_down_reg
+  failed_when: "'Exception' in web_down_reg.stdout"

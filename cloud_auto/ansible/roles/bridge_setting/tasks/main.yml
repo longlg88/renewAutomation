@@ -1,0 +1,97 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1 "
+  register: user_home
+
+- name: find os version
+  shell: "cat /etc/issue.net"
+  register: os_version
+
+- name: copy gen bridge setting shell
+  copy: src=../../../files/gen_iaaslite.sh dest={{ user_home.stdout }}/automation mode=0755
+  when: os_version.stdout == "Ubuntu 16.04.3 LTS"
+  become: true
+
+- name: copy find & change ip shell
+  copy: src=../../../files/find_change_ip.sh dest={{ user_home.stdout }}/automation mode=0755
+  when: os_version.stdout == "Ubuntu 16.04.3 LTS"
+  become: true
+
+- name: echo user_home
+  shell: "echo $SETTING_NETMASK"
+  when: os_version.stdout == "Ubuntu 16.04.3 LTS"
+  become: true
+
+- name: execute find & change ip shell
+  shell: "nohup {{ user_home.stdout }}/automation/find_change_ip.sh >> {{ user_home.stdout }}/log"
+  when: os_version.stdout == "Ubuntu 16.04.3 LTS"
+  become: true
+
+- name: gen bridge setting
+  shell: "nohup {{ user_home.stdout }}/automation/gen_iaaslite.sh >> {{ user_home.stdout }}/log"
+  when: os_version.stdout == "Ubuntu 16.04.3 LTS"
+  become: true
+
+- name: chmod 755 
+  shell: "chmod 755 {{ user_home.stdout }}/iaaslite.sh"
+  when: os_version.stdout == "Ubuntu 16.04.3 LTS"
+  become: true
+
+#- name: execute shell
+#  shell: "nohup {{ user_home }}/iaaslite.sh >> log"
+#  become: true
+
+#############################################################################
+##### noSDN bridge setting #####
+- name: mkdir netplan in {{ user_home.stdout }}/automation
+  file: path={{ user_home.stdout }}/automation/netplan/ state=directory
+  when: os_version.stdout == "TmaxLinux 4.0"
+
+## find netplan if name is "01-netcfg.yaml"
+- name: DO MAKE NETPLAN(read file name)
+  command: "ls /etc/netplan"
+  register: find_netplan
+  when: os_version.stdout == "TmaxLinux 4.0"
+
+#- name: execute lite make interfaces python program
+#  shell: "./lite_make_interfaces.py"
+
+- name: copy generate netplan file
+  shell: "cp {{ user_home.stdout }}/automation/netplan/lite-* /etc/netplan/{{ find_netplan.stdout }}"
+  when: TESTING == "OFF" and os_version.stdout == "TmaxLinux 4.0"
+
+- name: netplan apply
+  shell: "netplan --debug apply"
+  when: TESTING == "OFF" and os_version.stdout == "TmaxLinux 4.0"
+
+
+##############################################################################
+## this will be deprecated because of changing network model
+#############################################################################
+
+#- name: DO MAKE NETPLAN(Copy netplan file)
+#  shell: "cp /etc/netplan/* {{ user_home.stdout }}/automation/netplan"
+#  when: isCopy.stat.exists == false and os_version.stdout == "TmaxLinux 4.0"
+
+#- name: DO MAKE NETPLAN(mkdir tmp)
+#  file: path={{ user_home.stdout }}/tmp/ state=directory
+#  when: isCopy.stat.exists == false and os_version.stdout == "TmaxLinux 4.0"
+
+#- name: DO MAKE NETPLAN(make file noSDN netplan file)
+#  shell: "echo 'network:\n''  version: 2\n''  renderer: networkd\n''  ethernets:\n''    {{ SETTING_INTERFACE }}:\n'
+#'     dhcp4: no\n''      dhcp6: no\n''  bridges:\n''    v-12345678:\n''      interfaces: [{{ SETTING_INTERFACE }}]\n'
+#'     dhcp4: no\n''      dhcp6: no\n''      addresses: [{{ ansible_default_ipv4.address }}/{{ SETTING_CIDR }}]\n''      gateway4: {{ SETTING_GATEWAY }}\n'
+#'     parameters:\n''        stp: no\n''        forward-delay: 0' > {{ user_home.stdout }}/tmp/{{ find_netplan.stdout }}"
+#  when: isCopy.stat.exists == false and os_version.stdout == "TmaxLinux 4.0"
+
+#- name: copy tmp netplan to /etc/netplan
+#  shell: "cp {{ user_home.stdout }}/tmp/{{ find_netplan.stdout }} /etc/netplan/"
+#  when: isCopy.stat.exists == false and os_version.stdout == "TmaxLinux 4.0"
+
+#- name: remove netplan file in {{ user_home.stdout }}/tmp
+#  shell: "rm -f {{ user_home.stdout }}/tmp/{{ find_netplan.stdout }}"
+#  when: isCopy.stat.exists == false and os_version.stdout == "TmaxLinux 4.0"
+
+#- name: netplan apply
+#  shell: "netplan --debug apply"
+#  when: isCopy.stat.exists == false and os_version.stdout == "TmaxLinux 4.0"

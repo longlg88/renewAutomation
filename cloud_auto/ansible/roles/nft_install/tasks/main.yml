@@ -1,0 +1,16 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: mkdir nft_file
+  file: path={{ user_home.stdout }}/nft_file state=directory
+
+- name: untar nft_file.tar
+  unarchive:
+    extra_opts="--strip-components=1"
+    src=../../../files/binary/nft_file.tar
+    dest={{ user_home.stdout }}/nft_file
+
+- name: run script
+  shell: "{{ user_home.stdout }}/nft_file/run_script.sh"

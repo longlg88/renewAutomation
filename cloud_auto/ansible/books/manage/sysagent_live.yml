@@ -1,0 +1,8 @@
+---
+
+- name: sysmanager is live?
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/external_vars.yml"
+  roles:
+    - sysagent_live

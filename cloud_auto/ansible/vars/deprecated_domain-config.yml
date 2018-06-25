@@ -1,0 +1,34 @@
+# Default option values. You can input your options.
+domain: "domain1"
+domaindir: "{{ jeus_home }}/domains/{{ domain }}"
+productionmode: "true"
+server_name: "adminServer"
+jvm_config: "-Xmx1024m -XX:MaxPermSize=128m -Xdebug -Xrunjdwp:transport=dt_socket,address=9008,server=y,suspend=n -DPROOBJECT_HOME=/root/proobject7"
+jeus_port: "9736"
+jms_port: "9741"
+http_port: "8088"
+usevirtualmulticast: false
+heartbeataddress: "224.0.0.1"
+heartbeatport: "12488"
+# password's plain text is jeus.
+# If you want to set encrypted password, change it by set-password command with algorithm option in jeusadmin
+jeus_password: "{base64}{{ 'jeus' | b64encode }}"
+jeus_username: "jeus"
+jeus_password_cmd: "jeus"
+# Node configuration
+#nodename: "node1"
+# Other configuration
+jeus_lang: "ko"
+jvm_vendor: "Sun"
+
+# PO7 Server Config
+po7_server_name: "ProObject7"
+po_base_port: "19736"
+po_http_port: "8080"
+# DataBase Config : tibero
+data_source_id: "tibero6"
+db_ip: "192.168.201.120"
+db_port: "8629"
+db_name: "tibero"
+db_user: "impadmin"
+db_password: "cloudi1"

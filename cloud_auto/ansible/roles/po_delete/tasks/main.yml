@@ -1,0 +1,18 @@
+---
+- name: Remove directory jeus8
+  file: path=/{{ user }}/jeus8 state=absent
+
+- name: Remove directory proobject7
+  file: path=/{{ user }}/proobject7 state=absent
+
+- name: Remove directory tmp
+  file: path=/{{ user }}/tmp state=absent
+
+- name: Remove java home
+  file: path=/usr/java8_64 state=absent
+
+- name: Copy jeus config remove shell
+  copy: src=../../../files/po_delete.sh dest=/{{ user }}/ mode=0755
+
+- name: Excute po_down shell
+  shell: nohup /{{ user }}/po_delete.sh

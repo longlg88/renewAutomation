@@ -1,0 +1,35 @@
+---
+- name: Make recursive directory
+  file: path={{ user_home.stdout }}/{{ item }} state=directory
+  with_items:
+    - sys_agent
+
+- name: echo ansible_distribution
+  shell: "echo {{ ansible_distribution }}"
+
+- name: Copy sysmanager agent env
+  copy: src=../../../files/gen_sysmanager_setenv.sh dest={{ user_home.stdout }}/sys_agent/gen_sysmanager_setenv.sh mode=0755
+
+- name: Copy file_for_sysmanageragent
+  copy: src=../../../files/file_for_sysmanageragent dest={{ user_home.stdout }}/sys_agent/ mode=0755
+
+- name: find ip
+  shell: "/sbin/ifconfig | grep 'inet' | grep '172.31' | tr -s ' ' | cut -d ' ' -f3 | cut -d ':' -f 2"
+  register: find_ip
+
+- name: replace sysmanager agent env
+  replace:
+    dest: "{{ user_home.stdout }}/sys_agent/gen_sysmanager_setenv.sh"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@host_ip@@',rep: '{{ find_ip.stdout }}' }
+
+- name: Run gen set env
+  shell: "{{ user_home.stdout }}/sys_agent/gen_sysmanager_setenv.sh"
+
+- name: Copy sysmanager agent
+  copy: src=../../../files/sysmgr_agent_run.sh dest={{ user_home.stdout }}/sys_agent/ mode=0755
+
+- name: Copy sysmanager binary2
+  copy: src=../../../files/binary/sysmgr-agent dest={{ user_home.stdout }}/sys_agent/ mode=0755

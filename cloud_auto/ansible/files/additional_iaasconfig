@@ -1,0 +1,117 @@
+#!/usr/bin/python3
+import os
+import sys
+import requests
+import json
+import time
+
+def get_uuid(file):
+
+    lines=file.readlines()
+    master_ip="".join([s.split(":")[-1] for s in lines if 'master_ip' in s][0]).replace('\n','').replace(' ','')
+    tenant_uuid="".join([s.split(":")[-1] for s in lines if 'tenant_uuid' in s][0]).replace('\n','').replace(' ','')
+    #tenant_uuid2="".join([s.split(":")[-1] for s in lines if 'tenant_uuid2' in s][0]).replace('\n','').replace(' ','')
+    project_uuid="".join([s.split(":")[-1] for s in lines if 'project_uuid' in s][0]).replace('\n','').replace(' ','')
+
+    res_ssvr_spec=requests.get("http://"+master_ip+":8080/imp/master/specs?action=List")
+    res_ssvr_img=requests.get("http://"+master_ip+":8080/imp/master/tenants/"+tenant_uuid+"/projects/"+project_uuid+
+                        "/ImageList?imageName=cloud_tcs_ssvr&serviceType=1&sort=timeUp&state=All&imageClassification=Database&offset=0&limit=10")
+    res_ssvr_net=requests.get("http://"+master_ip+":8080/imp/master/networks?action=List&tenantUuid="+tenant_uuid+"&sort=createdTime&offset=1&limit=100")
+    if(res_ssvr_spec.status_code == 500):
+        print("error \n", res_ssvr_spec.json())
+        sys.exit()
+    elif(res_ssvr_img.status_code == 500):
+        print("error \n", res_ssvr_img.json())
+        sys.exit()
+    elif(res_ssvr_net.status_code == 500):
+        print("error \n", res_ssvr_net.json())
+        sys.exit()
+    else:
+        DIR_JSON='./json/ssvr_get'
+        if not os.path.exists(DIR_JSON):
+            os.makedirs(DIR_JSON, exist_ok=True)
+        
+        ## find ssvr spec uuid
+        with open(DIR_JSON+"/ssvr_spec.json",'w',encoding='utf-8') as spec_make_file:
+            json.dump(res_ssvr_spec.json(), spec_make_file, ensure_ascii=False, indent='\t', sort_keys=True)
+        with open(DIR_JSON+'/ssvr_spec.json') as spec_data_file:
+            spec_data = json.load(spec_data_file)
+        
+        ssvr_spec_len=len(spec_data['dto']['specList'])
+        ssvr_spec_uuid=''
+        for x in range(0, ssvr_spec_len):
+            if spec_data['dto']['specList'][x]['type'] == 'large':
+                ssvr_spec_uuid=spec_data['dto']['specList'][x]['specUuid']
+        
+        ## find ssvr image uuid
+        ssvr_image_uuid=''
+        with open(DIR_JSON+"/ssvr_image.json",'w',encoding='utf-8') as img_make_file:
+            json.dump(res_ssvr_img.json(), img_make_file, ensure_ascii=False, indent='\t', sort_keys=True)
+        with open(DIR_JSON+'/ssvr_image.json') as img_data_file:
+            img_data = json.load(img_data_file)
+
+        ssvr_img_uuid=img_data['dto']['listResult'][0]['imageUuid']
+
+
+        ## find ssvr management subnet uuid
+        # first find network uuid
+        with open(DIR_JSON+"/ssvr_net.json", 'w',encoding='utf-8') as net_make_file:
+            json.dump(res_ssvr_net.json(), net_make_file, ensure_ascii=False, indent='\t', sort_keys=True)
+        with open(DIR_JSON+'/ssvr_net.json') as net_data_file:
+            net_data = json.load(net_data_file)
+        
+        net_len=len(net_data['dto']['networks'])
+        net_uuid=''
+        for x in range(0, net_len):
+            if net_data['dto']['networks'][x]['type'] == '2':
+                net_uuid = net_data['dto']['networks'][x]['networkUuid']
+    
+    # last, find subnet uuid for using network uuid
+    res_ssvr_subnet=requests.get("http://"+master_ip+":8080/imp/master/subnets?action=List&networkUuid="+net_uuid+"&sort=createdTime&offset=0&limit=100")
+    if(res_ssvr_subnet.status_code == 500):
+        print("error \n", res_ssvr_subnet.json())
+        sys.exit()
+    else:
+        with open(DIR_JSON+"/ssvr_subnet.json", 'w', encoding='utf-8') as subnet_make_file:
+            json.dump(res_ssvr_subnet.json(), subnet_make_file, ensure_ascii=False, indent='\t', sort_keys=True)
+        with open(DIR_JSON+'/ssvr_subnet.json') as subnet_data_file:
+            subnet_data=json.load(subnet_data_file)
+
+        subnet_len=len(subnet_data['dto']['subnets'])
+        subnet_uuid=''
+        for x in range(0, subnet_len):
+            if subnet_data['dto']['subnets'][x]['type'] == '2':
+                subnet_uuid = subnet_data['dto']['subnets'][x]['subnetUuid']
+    
+    uuid=[ssvr_spec_uuid, ssvr_img_uuid, subnet_uuid]
+    return uuid
+
+if __name__ == "__main__":
+    time.sleep(30)
+    MASTER_INFO="./master_info"
+    if os.path.exists(MASTER_INFO):
+        f = open(MASTER_INFO,'r')
+        uuid=[]
+        uuid=get_uuid(f)
+        
+        iaas_config = open("./IaaSconfig",'a')
+        data = "SSVR_IMG_UUID="+uuid[1]+"\nSSVR_SPEC_UUID="+uuid[0]+"\nManageSubnetUuid="+uuid[2].lower()
+        iaas_config.write(data)
+        
+    else:
+        f = open(MASTER_INFO, 'w')
+        f_tenant_uuid=os.environ['tenant_uuid']
+        f_project_uuid=os.environ['project_uuid']
+        f_master_ip=os.environ['MasterIp']
+        #f_tenant_uuid=input("tenant uuid= ")
+        #f_project_uuid=input("project uuid= ")
+        #f_master_ip=input("master ip= ")
+        data="tenant_uuid: "+f_tenant_uuid+'\n'+"project_uuid: "+f_project_uuid+'\n'+"master_ip: "+f_master_ip
+        f.write(data)
+
+        uuid=[]
+        uuid=get_uuid(f)
+        
+        iaas_config = open("./IaaSconfig",'rw')
+        data = "SSVR_IMG_UUID="+uuid[1]+"\nSSVR_SPEC_UUID="+uuid[0]+"\nManageSubnetUuid="+uuid[2].lower()
+        iaas_config.write(data)

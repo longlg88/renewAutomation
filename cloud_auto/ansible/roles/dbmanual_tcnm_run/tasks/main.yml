@@ -1,0 +1,19 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }'"
+  register: user_home
+  become: true
+
+- name: Setting make_user.sql
+  shell: "{{ user_home.stdout }}/automation/db_files/gen_makeusersql.sh"
+  become: true
+
+- name: Create user 
+  shell: "tbsql sys/tibero @{{ user_home.stdout }}/automation/db_files/sql_script/make_user.sql"
+  become: true
+          
+- name: Create TCNM table sql
+  shell: "tbsql {{ tcnm_db_user }}/{{ tcnm_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/tcnm_db.sql"
+  become: true
+
+

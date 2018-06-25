@@ -1,0 +1,156 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: find os version
+  shell: "cat /etc/issue.net"
+  register: os_version
+
+## IaaS lite
+#- name: Execute bridge setting for IaaS lite version
+#  include_role:
+#    name: bridge_setting
+#  when: TCN_SDN_RUN == "OFF"
+
+- name: Chmod 755 to shell script
+#  file: path={{ user_home.stdout }}/automation/netplan/*.sh mode=0755
+  shell: "chmod 755 {{ user_home.stdout }}/automation/netplan/*.sh"
+  when: TCN_SDN_RUN == "OFF"
+
+- name: Check if 01-netcfg.yaml is exists
+  stat:
+    path: "{{ user_home.stdout }}/automation/netplan/01-netcfg.yaml"
+  register: isNetplan
+
+- name: Check if is master or normal 
+  shell: "grep -r 'id: 2' /etc/netplan/01-netcfg.yaml"
+  register: isMaster
+  ignore_errors: yes
+
+- name: Copy original netplan file if isNetplan is False
+  shell: "cp /etc/netplan/01-netcfg.yaml {{ user_home.stdout }}/automation/netplan/"
+  when: isNetplan.stat.exists == False and TCN_SDN_RUN == "OFF"
+
+- name: Copy noSDN_gen_01-* file to netplan
+  shell: "cp {{ user_home.stdout }}/automation/netplan/noSDN_gen_01-* /etc/netplan/01-netcfg.yaml"
+  when: TCN_SDN_RUN == "OFF"
+
+- name: modprobe 8021q
+  shell: "modprobe 8021q"
+  when: TCN_SDN_RUN == "OFF"
+
+- name: netplan apply
+  shell: netplan --debug apply
+  when: TCN_SDN_RUN == "OFF"
+
+- name: execute shell script master
+  shell: "{{ user_home.stdout }}/automation/netplan/noSDN-bridge-master-setting.sh"
+  when: TCN_SDN_RUN == "OFF" and isMaster.rc == 0
+
+- name: execute shell script normal
+  shell: "{{ user_home.stdout }}/automation/netplan/*.sh"
+  when: TCN_SDN_RUN == "OFF" and isMaster.rc == 1
+
+
+## IaaS SDN & Ubuntu 16.04
+- name: Backup origin interfaces
+  shell: "cp /etc/network/interfaces /etc/network/interfaces_org"
+  when: TCN_SDN_RUN == "ON" and os_version.stdout == "Ubuntu 16.04.3 LTS"
+
+- name: Move interfaces file
+  shell: "mv {{ user_home.stdout }}/interfaces* /etc/network/interfaces"
+  when: TCN_SDN_RUN == "ON" and os_version.stdout == "Ubuntu 16.04.3 LTS"
+
+- name: Copy up shell
+  copy: src=../../../files/net_up.sh dest={{ user_home.stdout }}/ mode=0755
+  when: TCN_SDN_RUN == "ON" and os_version.stdout == "Ubuntu 16.04.3 LTS"
+  
+- name: Copy down shell
+  copy: src=../../../files/net_down.sh dest={{ user_home.stdout }}/ mode=0755
+  when: TCN_SDN_RUN == "ON" and os_version.stdout == "Ubuntu 16.04.3 LTS"
+
+- name: Execute up shell
+  shell: "nohup {{ user_home.stdout }}/net_up.sh"
+  when: TCN_SDN_RUN == "ON" and os_version.stdout == "Ubuntu 16.04.3 LTS"
+
+- name: Copy setting shell
+  copy: src=../../../files/net_mv.sh dest={{ user_home.stdout }}/ mode=0755
+  when: TCN_SDN_RUN == "ON" and os_version.stdout == "Ubuntu 16.04.3 LTS"
+
+## IaaS SDN & Ubuntu 17.10
+- name: rm -f storage value
+  shell: "rm -f {{ user_home.stdout }}/automation/netplan/*Storage*"
+  when: all_in_infra == "ON" and TCN_SDN_RUN  == "ON"
+
+- name: Chmod 755 to shell script
+  shell: "chmod 755 {{ user_home.stdout }}/automation/netplan/*.sh"
+  when: TCN_SDN_RUN == "ON"
+
+- name: Check if is master or normal
+  shell: "grep -r 'id: 2' /etc/netplan/01-netcfg.yaml"
+  register: isMaster
+  ignore_errors: yes
+
+- name: copy remove_interface_master.sh when master node
+  copy: src=../../../files/remove_interface_master.sh dest=/etc/profile.d/ mode=0755
+  when: isMaster.rc == 0
+
+- name: copy remove_interface_infra.sh when infra node
+  copy: src=../../../files/remove_interface_infra.sh dest=/etc/profile.d/ mode=0755
+  when: isMaster.rc == 1
+
+- name: Copy original netplan file if isNetplan is False
+  shell: "cp /etc/netplan/01-netcfg.yaml {{ user_home.stdout }}/automation/netplan/"
+  when: isNetplan.stat.exists == False and TCN_SDN_RUN == "ON"
+
+- name: Copy noSDN_gen_01-* file to netplan
+  shell: "cp {{ user_home.stdout }}/automation/netplan/SDN_gen_01-* /etc/netplan/01-netcfg.yaml"
+  when: TCN_SDN_RUN == "ON"
+
+- name: modprobe 8021q
+  shell: "modprobe 8021q"
+  when: TCN_SDN_RUN == "ON"
+
+- name: netplan apply
+  shell: netplan --debug apply
+  when: TCN_SDN_RUN == "ON"
+
+- name: execute shell script master
+  shell: "{{ user_home.stdout }}/automation/netplan/SDN-bridge-master-setting.sh"
+  when: TCN_SDN_RUN == "ON" and isMaster.rc == 0
+
+- name: copy shell script to /etc/profile.d when master
+  shell: "{{ user_home.stdout }}/automation/netplan/SDN-bridge-master-setting.sh /etc/profile.d/"
+  when: TCN_SDN_RUN == "ON" and isMaster.rc == 0
+
+- name: execute shell script normal
+  shell: "{{ user_home.stdout }}/automation/netplan/*.sh"
+  when: TCN_SDN_RUN == "ON" and isMaster.rc == 1
+
+- name: insert pseudomac in profile
+  shell: "cat {{ user_home.stdout }}/automation/netplan/profile_pseudomac >> /etc/profile"
+
+#- name: Backup origin netplan
+#  shell: "cp /etc/netplan/*.yaml /etc/netplan/org_netplan.yaml"
+#  when: TCN_SDN_RUN == "ON" and os_version.stdout == "TmaxLinux 4.0"
+
+#- name: Copy netplan yaml file
+#  shell: "mv {{ user_home.stdout }}/gen_* /etc/netplan/01-netcfg.yaml"
+#  when: TCN_SDN_RUN == "ON" and os_version.stdout == "TmaxLinux 4.0"
+
+#- name: Execute netplan apply
+#  shell: "netplan apply"
+#  when: TCN_SDN_RUN == "ON" and os_version.stdout == "TmaxLinux 4.0"
+#  become: true
+
+#- name: Make netplan directory
+#  file: path={{ user_home.stdout }}/automation/netplan state=directory
+#  when: TCN_SDN_RUN == "ON" and os_version.stdout == "TmaxLinux 4.0"
+
+#- name: Execute shell script that link pseudo mac
+#  shell: "{{ user_home.stdout }}/automation/netplan/net_*.sh"
+#  when: TCN_SDN_RUN == "ON" and os_version.stdout == "TmaxLinux 4.0"
+#  become: true
+
+

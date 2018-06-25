@@ -1,0 +1,92 @@
+---
+
+- name: Make license directory
+  file: path={{ user_home.stdout }}/automation/db_files/{{ item }} state=directory
+  with_items:
+    - sql_script
+    - license
+  become: true
+
+- name: copy create_database.sql
+  copy: src=../../../files/sql_script/create_database.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/create_database.sql mode=0755
+  become: true
+
+- name: copy make user sql
+  copy: src=../../../files/gen_makeusersql.sh dest={{ user_home.stdout }}/automation/db_files mode=0755
+  become: true
+
+- name: copy gen setenv
+  copy: src=../../../files/gen_setenv.sh dest={{ user_home.stdout }}/automation/db_files mode=0755
+  become: true
+
+- name: copy gen_vport py
+  copy: src=../../../files/gen_vport.py dest={{ user_home.stdout }}/automation/db_files mode=0755
+  become: true
+
+- name: copy initial iaas db sql
+  copy: src=../../../files/sql_script/imp_create_table.sql dest={{ user_home.stdout }}/automation/db_files/sql_script mode=0755
+  become: true
+
+- name: copy insert iaas db sql
+  copy: src=../../../files/sql_script/insert_table.sql dest={{ user_home.stdout }}/automation/db_files/sql_script mode=0755
+  become: true
+
+- name: copy trigger 1
+  copy: src=../../../files/sql_script/trigger_1.sql dest={{ user_home.stdout }}/automation/db_files/sql_script mode=0755
+  become: true
+
+- name: copy trigger 2
+  copy: src=../../../files/sql_script/trigger_2.sql dest={{ user_home.stdout }}/automation/db_files/sql_script mode=0755
+  become: true
+
+#- name: update Host params
+
+
+- name: copy initial volume manager db sql
+  copy: src=../../../files/sql_script/csvmgr_schema.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/ mode=0755
+  become: true
+
+- name: copy initial portal db sql
+  copy: src=../../../files/sql_script/usermgt_create_table.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/ mode=0755
+  become: true
+
+- name: copy insert portal db sql
+  copy: src=../../../files/sql_script/usermgt_insert.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/ mode=0755
+  become: true
+
+- name: copy insert tcnm db sql
+  copy: src=../../../files/sql_script/tcnm_db.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/ mode=0755
+  when: IAAS_VERSION == "IAAS"
+  become: true
+
+- name: copy auth create db sql
+  copy: src=../../../files/sql_script/auth_create_table.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/ mode=0755
+  become: true
+
+- name: copy auth insert
+  copy: src=../../../files/sql_script/auth_insert.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/ mode=0755
+  become: true
+
+#- name: copy auth to usermgt sql
+#  copy: src=../../../files/sql_script/auth_to_usermgt_share.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/ mode=0755
+#  become: true
+
+#- name: copy cmdb db sql
+#  copy: src=../../../files/sql_script/cmdb_create_table.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/ mode=0755
+#  become: true
+
+- name: copy nfvadmin create sql
+  copy: src=../../../files/sql_script/nfvadmin_create.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/ mode=0755
+  become: true
+
+- name: copy nfvadmin insert sql
+  copy: src=../../../files/sql_script/nfvadmin_insert.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/ mode=0755
+  become: true
+
+- name: copy cds create sql
+  copy: src=../../../files/sql_script/cds_create.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/ mode=0755
+  become: true
+
+- name: copy license.xml
+  copy: src=../../../files/binary/db_license/license.xml dest={{ user_home.stdout }}/automation/db_files/license mode=0755
+  become: true

@@ -1,0 +1,20 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }'"
+  register: user_home
+
+- name: make directory
+  file: path={{ user_home.stdout }}/automation/tcnc/ state=directory
+  become: true
+
+- name: Copy tcnc.deb to master node
+  copy: src=../../../files/binary/tcnc.deb dest={{ user_home.stdout }}/automation/tcnc/ mode=0755
+  become: true
+
+- name: dpkg -i tcnc.deb
+  shell: "dpkg -i {{ user_home.stdout }}/automation/tcnc/tcnc.deb"
+  become: true
+
+- name: run tcnc
+  shell: "nohup /opt/tcnc/bin/tcn_main > /dev/null &"
+  become: true

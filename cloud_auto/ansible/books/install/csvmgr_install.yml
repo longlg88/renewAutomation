@@ -1,0 +1,24 @@
+---
+- name: Init ansible home
+  hosts: '{{ hosts }}'
+
+- name: Install volume manager
+  hosts: '{{ hosts }}'
+  environment:
+    TB_HOME: '{{ tb_home }}'
+    TB_SID: '{{ tb_sid }}'
+    CSVMGR_HOME: '{{ CSVMGR_HOME }}'
+    CSVMGR_SID: '{{ CSVMGR_SID }}'
+    CSVMGR_IPADDR: '{{ CSVMGR_IPADDR }}'
+    CSVMGR_PORT: '{{ CSVMGR_PORT }}'
+    CSVMGR_META_DB_NAME: '{{ CSVMGR_META_DB_NAME }}'
+    CSVMGR_META_DB_USER: '{{ CSVMGR_META_DB_USER }}'
+    CSVMGR_META_DB_PWD: '{{ CSVMGR_META_DB_PWD }}'
+    CSVMGR_LOG_DIR: '{{ CSVMGR_LOG_DIR }}'
+    CSVMGR_LOG_LEVEL: '{{ CSVMGR_LOG_LEVEL }}'
+  vars_files:
+    - "../../vars/csvmgr_vars.yml"
+    - "../../vars/db_config.yml"
+
+  roles:
+    - csvmgr_install

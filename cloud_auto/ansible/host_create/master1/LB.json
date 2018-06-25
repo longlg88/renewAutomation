@@ -1,0 +1,24 @@
+{
+    "dto":{
+        "hostName":"LB",
+        "hostIp":"172.31.1.2",
+        "totalCpu":16,
+        "totalMemory":32000,
+        "totalDisk":300,
+        "pooledDisk":300,
+        "hostType":"Master",
+        "hypervisorType":"LXC",
+        "cpuArch":"x86_64",
+        "availabilityZone":"",
+        "status":"Running",
+        "hostPmac":"",
+        "frontendPort":"eno1.2",
+        "backendPort":"eno1.3",
+        "managementPort":"eno1",
+        "switchDpid":2038033768499425473,
+        "switchPort":49,
+        "accessName":"root",
+        "accessAuth":"tmax@23",
+        "active":true
+    }
+}

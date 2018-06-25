@@ -1,0 +1,249 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: copy po7 war
+  copy: src=../../../files/binary/{{ po7_runtime_binary }} dest={{ domaindir }}/.applications/{{ po7_runtime_binary }} mode=0755
+
+- name: untar master proobejct7 binary tar
+  unarchive:
+    extra_opts="--strip-components=1"
+    src=../../../files/binary/master_proobject7.tar.gz
+    dest={{ user_home.stdout }}/po7/
+
+- name: copy IaaSconfig
+  copy: src=../../../files/IaaSconfig dest={{ user_home.stdout }}/
+
+- name: IaaS Config
+  replace:
+    dest: "{{ user_home.stdout }}/IaaSconfig"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@TCA_MASTER_USER@@', rep: '{{ TCA_MASTER_USER }}' }
+    - { exp: '@@TCA_MASTER_PW@@', rep: '{{ TCA_MASTER_PW }}' }
+    - { exp: '@@TCA_MASTER_IP@@', rep: '{{ TCA_MASTER_IP }}' }
+    - { exp: '@@TCA_MASTER_SVC_PORT@@', rep: '{{ TCA_MASTER_SVC_PORT }}' }
+    - { exp: '@@TCA_MASTER_SSH_PORT@@', rep: '{{ TCA_MASTER_SSH_PORT }}' }
+
+    - { exp: '@@IMAGE_GATEWAY_USER@@', rep: '{{ IMAGE_GATEWAY_USER }}' }
+    - { exp: '@@IMAGE_GATEWAY_PW@@', rep: '{{ IMAGE_GATEWAY_PW }}' }
+    - { exp: '@@IMAGE_GATEWAY_IP@@', rep: '{{ IMAGE_GATEWAY_IP }}' }
+    - { exp: '@@IMAGE_GATEWAY_PORT@@', rep: '{{ IMAGE_GATEWAY_PORT }}' }
+    - { exp: '@@IMAGE_INNER_LOCATION@@', rep: '{{ IMAGE_INNER_LOCATION }}' }
+    - { exp: '@@IMAGE_INNER_AUTH@@', rep: '{{ IMAGE_INNER_AUTH }}' }
+    - { exp: '@@IMAGE_OUTER_LOCATION@@', rep: '{{ IMAGE_OUTER_LOCATION }}' }
+    - { exp: '@@VM_IMAGE_OUTER_IP@@', rep: '{{ VM_IMAGE_OUTER_IP }}' }
+    - { exp: '@@VM_IMAGE_OUTER_SSH_PORT@@', rep: '{{ VM_IMAGE_OUTER_SSH_PORT }}' }
+    - { exp: '@@VM_IMAGE_OUTER_USER@@', rep: '{{ VM_IMAGE_OUTER_USER }}' }
+    - { exp: '@@VM_IMAGE_OUTER_PW@@', rep: '{{ VM_IMAGE_OUTER_PW }}' }
+    - { exp: '@@VM_IMAGE_OUTER_DIR@@', rep: '{{ VM_IMAGE_OUTER_DIR }}' }
+    - { exp: '@@IMAGE_STORAGE_LOCATION@@', rep: '{{ IMAGE_STORAGE_LOCATION }}' }
+
+    - { exp: '@@RADOS_GATEWAY_LOCATION@@', rep: '{{ RADOS_GATEWAY_LOCATION }}' }
+
+    - { exp: '@@LB_NFT@@', rep: '{{ LB_NFT }}' }
+    - { exp: '@@LB_NFT_IP@@' ,rep: '{{ LB_NFT_IP }}' }
+
+    - { exp: '@@SYS_AGENT_RUN@@', rep: '{{ SYS_AGENT_RUN }}' }
+    - { exp: '@@TCN_SDN_RUN@@', rep: '{{ TCN_SDN_RUN }}' }
+
+    - { exp: '@@VM_MNG_IP@@', rep: '{{ VM_MNG_IP }}' }
+    - { exp: '@@VM_INTERNAL_IP@@', rep: '{{ VM_INTERNAL_IP }}' }
+    - { exp: '@@VM_PORT@@', rep: '{{ VM_PORT }}' }
+    - { exp: '@@VM_NODE_USER@@', rep: '{{ VM_NODE_USER }}' }
+    - { exp: '@@VM_NODE_PASSWORD@@', rep: '{{ VM_NODE_PASSWORD }}' }
+    - { exp: '@@TCS_VM_HOME@@', rep: '{{ TCS_VM_HOME }}' }
+
+    - { exp: '@@TCS_LSNR_PORT@@', rep: '{{ TCS_LSNR_PORT }}' }
+    - { exp: '@@TCS_RECV_PORT@@', rep: '{{ TCS_RECV_PORT }}' }
+
+    - { exp: '@@WEBCONSOLE_PROXY_SERVER_IP@@', rep: '{{ WEBCONSOLE_PROXY_SERVER_IP }}' }
+    - { exp: '@@WEBCONSOLE_PROXY_SERVER_PUBLIC_IP@@', rep: '{{ WEBCONSOLE_PROXY_SERVER_PUBLIC_IP }}' }
+    - { exp: '@@WEBCONSOLE_PROXY_SERVER_PORT@@', rep: '{{ WEBCONSOLE_PROXY_SERVER_PORT }}' }
+    - { exp: '@@WEBCONSOLE_PROXY_SERVER_USER@@', rep: '{{ WEBCONSOLE_PROXY_SERVER_USER }}' }
+    - { exp: '@@WEBCONSOLE_PROXY_SERVER_PASSWORD@@', rep: '{{ WEBCONSOLE_PROXY_SERVER_PASSWORD }}' }
+
+    - { exp: '@@CMDB_ENABLE@@', rep: '{{ CMDB_ENABLE }}' }
+    - { exp: '@@CMDB_IP@@', rep: '{{ CMDB_IP }}' }
+    - { exp: '@@CMDB_PORT@@', rep: '{{ CMDB_PORT }}' }
+    - { exp: '@@TCNM_IP@@', rep: '{{ TCNM_IP }}' }
+    - { exp: '@@TCNM_PORT@@', rep: '{{ TCNM_PORT }}' }
+
+    - { exp: '@@FAILOVER_ENABLE@@', rep: '{{ FAILOVER_ENABLE }}' }
+    - { exp: '@@IAAS_VERSION@@', rep: '{{ IAAS_VERSION }}' }
+    - { exp: '@@AGENT_LXC_VERSION@@', rep: '{{ AGENT_LXC_VERSION }}' }
+
+    - { exp: '@@AUTH_IP@@', rep: '{{ AUTH_IP }}' }
+    - { exp: '@@CEPH_MON_IP@@', rep: '{{ CEPH_MON_IP }}' }
+
+- name: IaaS Config in variable setting VM_NODE_IP / VM_ENV
+  blockinfile:
+    path: "{{ user_home.stdout }}/IaaSconfig"
+    marker: ""
+    insertafter: EOF
+    block: |
+      VM_NODE_IP={{ VM_NODE_IP }}
+      VM_ENV={{ VM_ENV }}
+  when: IAAS_VERSION == "IAASLITE"
+
+- name: IaaS config move
+  shell: "mv {{ user_home.stdout }}/IaaSconfig {{ user_home.stdout }}/po7/IaaSMaster/config/"
+
+
+################## IaaS / Sysmanager / NFT config file replace ######################
+##### IaaS ######
+- name: IaaS proobject.xml replace
+  replace:
+    dest: "{{ user_home.stdout }}/po7/IaaSMaster/config/proobject.xml"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@iaas_outbound_port@@', rep: '{{ iaas_outbound_port }}' }
+
+- name: IaaS servicegroup.xml replace
+  replace:
+    dest: "{{ user_home.stdout }}/po7/IaaSMaster/application/servicegroup/master/config/servicegroup.xml"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@master_management_ip@@', rep: '{{ master_management_ip }}' }
+    - { exp: '@@sysmanager_outbound_port@@', rep: '{{ sysmanager_outbound_port }}' }
+    - { exp: '@@nft_outbound_port@@', rep: '{{ nft_outbound_port }}' }
+    - { exp: '@@iaas_data_source_id@@', rep: '{{ iaas_data_source_id }}' }
+
+- name: IaaS dbio_config.xml replace
+  replace:
+    dest: "{{ user_home.stdout }}/po7/IaaSMaster/config/dbio_config.xml"
+    regexp: '{{ item.exp }}'
+    replace: '{{ item.rep }}'
+  with_items:
+    - { exp: '@@iaas_data_source_id@@', rep: '{{ iaas_data_source_id }}' }
+    - { exp: '@@iaas_db_user@@', rep: '{{ iaas_db_user }}' }
+    - { exp: '@@iaas_db_password@@', rep: '{{ iaas_db_password }}' }
+    - { exp: '@@master_management_ip@@', rep: '{{ master_management_ip }}' }
+    - { exp: '@@iaas_db_port@@', rep: '{{ iaas_db_port }}' }
+
+- name: IaaS topic.xml replace
+  replace:
+    dest: '{{ user_home.stdout }}/po7/IaaSMaster/config/topic.xml'
+    regexp: "{{ item.exp }}"
+    replace: '{{ item.rep }}'
+  with_items:
+    - { exp: '@@master_management_ip@@', rep: '{{ master_management_ip }}' }
+    - { exp: '@@po_sysmanager_base_port@@', rep: '{{ po_sysmanager_base_port }}' }
+
+##### Sysmanager #####
+- name: Sysmanager proobject.xml replace
+  replace:
+    dest: '{{ user_home.stdout }}/po7/SysManagerMaster/config/proobject.xml'
+    regexp: "{{ item.exp }}"
+    replace: '{{ item.rep }}'
+  with_items:
+    - { exp: '@@sysmanager_outbound_port@@', rep: '{{ sysmanager_outbound_port }}' }
+
+- name: Sysmanager servicegroup.xml replace
+  replace:
+    dest: '{{ user_home.stdout }}/po7/SysManagerMaster/application/servicegroup/sysmanager/config/servicegroup.xml'
+    regexp: '{{ item.exp }}'
+    replace: '{{ item.rep }}'
+  with_items:
+    - { exp: '@@master_management_ip@@', rep: '{{ master_management_ip }}' }
+    - { exp: '@@iaas_outbound_port@@', rep: '{{ iaas_outbound_port }}' }
+
+
+##### CDS #####
+- name: CDS proobject.xml replace
+  replace:
+    dest: '{{ user_home.stdout }}/po7/CDSMaster/config/proobject.xml'
+    regexp: '{{ item.exp }}'
+    replace: '{{ item.rep }}'
+  with_items:
+    - { exp: '@@master_management_ip@@', rep: '{{ master_management_ip }}' }
+    - { exp: '@@po_cds_base_port@@', rep: '{{ po_cds_base_port }}' }
+    - { exp: '@@cds_outbound_port@@', rep: '{{ cds_outbound_port }}' }
+
+
+
+##### NFT #####
+#- name: NFT proobject.xml replace
+#  replace:
+#    dest: '{{ user_home.stdout }}/po7/TCNMMaster/config/proobject.xml'
+#    regexp: '{{ item.exp }}'
+#    replace: '{{ item.rep }}'
+#  with_items:
+#    - { exp: '@@nft_outbound_port@@', rep: '{{ nft_outbound_port }}' }
+
+#- name: NFT servicegroup.xml replace
+#  replace:
+#    dest: '{{ user_home.stdout }}/po7/TCNMMaster/application/servicegroup/tcnm/config/servicegroup.xml'
+#    regexp: '{{ item.exp }}'
+#    replace: '{{ item.rep }}'
+#  with_items:
+#    - { exp: '@@master_management_ip@@', rep: '{{ master_management_ip }}' }
+#    - { exp: '@@iaas_outbound_port@@', rep: '{{ iaas_outbound_port }}' }
+
+
+##### JEUS NodeManager port change #####
+- name: JEUS NodeManager xml copy
+  copy: src=../../../files/totalmaster_jeusnm.xml dest={{ jeus_home }}/nodemanager/jeusnm.xml" mode=0755
+
+- name: JEUS NodeManager port change
+  replace:
+    dest: '{{ jeus_home }}/nodemanager/jeusnm.xml'
+    regexp: '{{ item.exp }}'
+    replace: '{{ item.rep }}'
+  with_items:
+    - { exp: '@@totalmaster_nodemanager_port@@', rep: '{{ totalmaster_nodemanager_port }}' }
+
+
+
+
+################# END ################################################################
+
+- name: Copy master_run.sh
+  copy: src=../../../files/run/master_run.sh dest={{ user_home.stdout }}/cmd/ mode=0755
+  become: true
+
+- name: Copy master_down.sh
+  copy: src=../../../files/run/master_down.sh dest={{ user_home.stdout }}/cmd/ mode=0755
+  become: true
+
+- name: Copy iaas_down_run.sh
+  copy: src=../../../files/run/iaas_down_run.sh dest={{ user_home.stdout }}/cmd/ mode=0755
+  become: true
+
+- name: Copy sysmanager_down_run.sh
+  copy: src=../../../files/run/sysmanager_down_run.sh dest={{ user_home.stdout }}/cmd/ mode=0755
+  become: true
+
+- name: Copy cds_down_run.sh
+  copy: src=../../../files/run/cds_down_run.sh dest={{ user_home.stdout }}/cmd/ mode=0755
+  become: true
+
+
+
+- name: Replace all cmd directory shells
+  replace:
+    dest: "{{ user_home.stdout }}/cmd/*.sh"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@jeus_home@@', rep: '{{ jeus_home }}' }
+    - { exp: '@@DOMAINNAME@@', rep: '{{ domain }}' }
+    - { exp: '@@USERNAME@@', rep: '{{ jeus_username }}' }
+    - { exp: '@@PASSWORDCMD@@', rep: '{{ jeus_password_cmd }}' }
+    - { exp: '@@BASE-PORT@@', rep: '{{ jeus_port }}' }
+    - { exp: '@@PROOBJECT_SERVER_NAME@@', rep: '{{ po7_server_name }}' }
+    - { exp: '@@PROOBJECT_SYSMANAGER_SERVER_NAME@@', rep: '{{ po7_sysmanager_server_name }}' }
+    - { exp: '@@PROOBJECT_CDS_SERVER_NAME@@', rep: '{{ po7_cds_server_name }}' }
+    - { exp: '@@totalmaster_nodemanager_port@@', rep: '{{ totalmaster_nodemanager_port }}' }
+    - { exp: '@@po_base_port@@', rep: '{{ po_base_port }}' }
+    - { exp: '@@po_sysmanager_base_port@@', rep: '{{ po_sysmanager_base_port }}' }
+    - { exp: '@@po_cds_base_port@@', rep: '{{ po_cds_base_port }}' }
+  become: true
+
+- name: run master_run.sh
+  shell: "{{ user_home.stdout }}/cmd/master_run.sh"
+  become: true

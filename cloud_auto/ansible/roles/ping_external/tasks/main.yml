@@ -1,0 +1,23 @@
+---
+- name: Main main recursive directory(ALL)
+  file: path=/{{ user }}/automation/{{ item }} state=directory
+  with_items:
+    - ping
+
+- name: RUn apt-get update 
+  apt: update_cache=yes cache_valid_time=3600	
+
+#- name: package upgrade
+#  apt: upgrade=dist
+
+- name: Copy ping external test shell script
+  copy: src=../../../files/ping_external_test.sh dest=/{{ user }}/automation/ping/ owner={{ user }} mode=0755
+
+- name: Copy ping external transfer log shell script
+  copy: src=../../../files/transfer_log.sh dest=/{{ user }}/automation/ping/ owner={{ user }} mode=0755
+
+- name: Execute ping external test shell script
+  shell: /{{ user }}/automation/ping/ping_external_test.sh
+
+- name: Execute transfer log shell script
+  shell: /{{ user }}/automation/ping/transfer_log.sh

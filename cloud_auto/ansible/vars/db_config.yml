@@ -1,0 +1,91 @@
+---
+## ansible vars
+ansi_path: "{{ (ansible_env|default({})).PATH|default('') }}"
+
+
+## Tibero vars
+tb_home: "{{ ansible_env.HOME }}/tibero6"
+tb_sid: tibero
+tb_binary_path: "../../../files/binary/tibero6-bin-FS06-linux64-151366-opt-tested.tar.gz"
+tb_csvmgr_binary_path: "../../../files/binary/tibero6-bin-FS07-linux64-154470-opt-20180525152033-nolic.tar.gz"
+tablespace_name: SYSMGR
+
+# IaaS DataBase Config
+iaas_data_source_id: "iaas_db"
+iaas_export_name: "iaas_db"
+iaas_db_ip: ""
+iaas_db_port: "8629"
+iaas_db_name: "tibero"
+iaas_db_user: "impadmin"
+iaas_db_password: "cloudi1"
+
+# TCNM DataBase Config
+tcnm_data_source_id: "tcn_db"
+tcnm_export_name: "tcn_db"
+tcnm_db_ip: ""
+tcnm_db_port: "8629"
+tcnm_db_name: "tibero"
+tcnm_db_user: "tcnm"
+tcnm_db_password: "tcnm"
+
+# NFV DataBase Config
+nft_data_source_id: "nft_db"
+nft_export_name: "nft_db"
+nft_db_ip: ""
+nft_db_port: "8629"
+nft_db_name: "tibero"
+nft_db_user: "nfvadmin"
+nft_db_password: "nfvadmin"
+
+
+# Sysmanager DataBase Config
+smgr_data_source_id: "smgr_tibero"
+smgr_export_name: "smgr_tibero"
+smgr_db_ip: ""
+smgr_db_port: "8629"
+smgr_db_name: "tibero"
+smgr_db_user: "smgr"
+smgr_db_password: "smgr"
+
+eventDB_data_source_id: "eventDB"
+eventDB_export_name: "eventDB"
+eventDB_db_name: "eventDB"
+eventDB_db_user: "sm7_event_db"
+eventDB_db_password: "sm7_event_db"
+
+# CMDB DataBase Config
+cmdb_data_source_id: "CMDB"
+cmdb_export_name: "cmdb"
+cmdb_db_user: "cmdb"
+cmdb_db_password: "cmdb"
+
+## Auth Database Config
+auth_data_source_id: "auth_tibero"
+auth_export_name: "auth_tibero"
+auth_db_user: "auth"
+auth_db_password: "auth"
+
+# UserManagement DataBase Config
+user_data_source_id: "usermanagement"
+user_export_name: "usermanagement"
+user_db_name: "tibero"
+user_db_user: "usermgt"
+user_db_password: "cloudi1"
+
+# CSVMGR DataBase Config
+CSVMGR_META_DB_USER: "csvmgr"
+CSVMGR_META_DB_PWD: "csvmgr"
+
+SMGRID: smgr
+SMGRPW: smgr
+SMEVENTID: sm7_event_db
+SMEVENTPW: sm7_event_db
+
+# CDS Database Config
+cds_data_source_id: "cds_db"
+cds_export_name: "cds_db"
+cds_db_ip: ""
+cds_db_port: "8629"
+cds_db_name: "tibero"
+cds_db_user: "cds"
+cds_db_password: "cds"

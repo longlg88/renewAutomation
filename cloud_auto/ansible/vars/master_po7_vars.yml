@@ -1,0 +1,15 @@
+---
+java_version: "java8_64"
+java_home: "/usr/{{ java_version }}"
+jeus_home: "{{ ansible_env.HOME }}/jeus8_totalmaster"
+ansi_path: "{{ (ansible_env|default({})).PATH|default('') }}"
+remote_os_name: "{{ ansible_system }}"
+remote_os_arch: "{{ ansible_architecture }}"
+jeus_version: "jeus8-b110.zip"
+### install option ######################################
+build_version: b006 # b006, b007
+nodes_type: java # java, ssh
+bitz: x64 # x86, x64
+### po7 var #############################################
+po_home: "{{ ansible_env.HOME }}/po7"
+po7_runtime_binary: "proobject-runtime-war-7.0.0.0.596.war"

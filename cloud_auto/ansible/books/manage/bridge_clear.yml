@@ -1,0 +1,8 @@
+---
+- name: Clear bridge setting for I1 model
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+    - "../../vars/bridge_setting_lite.yml"
+  roles:
+    - bridge_clear

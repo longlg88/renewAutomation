@@ -1,0 +1,9 @@
+---
+
+- name: Setting image scp host init
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+
+  roles:
+    - image_scp_init

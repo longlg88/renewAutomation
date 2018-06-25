@@ -1,0 +1,64 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: Make compute directory
+  file: path={{ user_home.stdout }}/automation/{{ item }} state=directory
+  with_items:
+    - compute
+
+- name: Copy cs_package_install shell
+  copy: src=../../../files/cs_host_package_install.sh dest={{ user_home.stdout }}/automation/compute/cs_host_package_install.sh mode=0755
+  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Tmaxlinux"
+
+- name: install lxc
+  shell: "sh {{ user_home.stdout }}/automation/compute/cs_host_package_install.sh"
+  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Tmaxlinux"
+
+- name: copy tca-compute-sdn file
+  copy: src=../../../files/tca-compute-sdn dest=/etc/init.d/tca-compute
+  when: TCN_SDN_RUN ==  "ON"
+
+- name: copy tca-compute-nosdn file
+  copy: src=../../../files/tca-compute-nosdn dest=/etc/init.d/tca-compute
+  when: TCN_SDN_RUN == "OFF"
+
+- name: replace user_home in tca-compute
+  replace:
+    dest: "/etc/init.d/tca-compute"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@user_home@@', rep: '{{ user_home.stdout }}' }
+
+- name: Copy setting shell
+  copy: src=../../../files/cs_host_setting.sh dest={{ user_home.stdout }}/automation/compute/cs_host_setting.sh mode=0755
+
+- name: Setting shell
+  shell: "sh {{ user_home.stdout }}/automation/compute/cs_host_setting.sh"
+
+
+### ================== crash core file setting ===================
+- name: Make .config directory
+  file: path={{ user_home.stdout }}/.config state=directory
+
+- name: Make .config/apport directory
+  file: path={{ user_home.stdout }}/.config/apport state=directory
+
+- name: Copy file settings
+  copy: src=../../../files/crash_core_settings dest={{ user_home.stdout }}/.config/apport/settings mode=0755
+
+## ================================== apparmor ========================================
+
+- name: mkdir apparmor directory
+  file: path=/etc/apparmor.d/lxc state=directory
+
+- name: copy lxc-tca-mount
+  copy: src=../../../files/lxc-tca-mount dest=/etc/apparmor.d/lxc/ mode=0755
+
+- name: copy lxc-tca-normal
+  copy: src=../../../files/lxc-tca-normal dest=/etc/apparmor.d/lxc/ mode=0755
+
+- name: apparmor_parser run
+  shell: "apparmor_parser -r /etc/apparmor.d/lxc-containers"

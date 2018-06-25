@@ -1,0 +1,7 @@
+---
+
+- name: Copy export dat
+  copy: src=../../../files/export.dat dest=/{{ user }}/export.dat owner={{ user }} mode=0755
+
+- name: Import to db export dat
+  shell: tbimport username=sys password=tibero sid=tibero file=export.dat full=y grant=y index=y constraint=y

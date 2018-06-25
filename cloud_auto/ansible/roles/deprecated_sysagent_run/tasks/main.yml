@@ -1,0 +1,4 @@
+---
+
+- name: Execute sysmanager agent
+  shell: "nohup /{{ user }}/sys_agent/sys_agent_run.sh"

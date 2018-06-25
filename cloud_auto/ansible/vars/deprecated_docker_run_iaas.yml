@@ -1,0 +1,9 @@
+---
+app_name: "iaas_master"
+outbound_port1: 6776
+outbound_port2: 9008
+webadmin_port: 9736
+http_port: 8080
+po7_path: "/root/proobject7"
+po7_runtime_war: "po7.war"
+master_name: "iaas_master"

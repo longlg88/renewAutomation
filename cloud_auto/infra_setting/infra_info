@@ -1,0 +1,56 @@
+## using network sql
+user_tenant_uuid: 0739ec6d
+admin_tenant_uuid: 11111111
+
+## using subnet sql
+## host_front
+h_ipaddr: 10.1.0.0
+h_netmask: 255.255.0.0
+h_cidr: 16
+h_gateway: 10.1.0.1
+h_dns: 8.8.8.8
+
+## container front
+f_ipaddr: 10.4.0.0
+f_netmask: 255.255.0.0
+f_cidr: 16
+f_gateway: 10.4.0.1
+f_dns: 8.8.8.8
+
+## lb vip
+v_ipaddr: 10.2.0.0
+v_netmask: 255.255.0.0
+v_cidr: 16
+v_gateway: 10.2.0.1
+v_dns: 8.8.8.8
+
+## management
+m_ipaddr: 10.6.0.0
+m_netmask: 255.254.0.0
+m_cidr: 15
+m_gateway: 10.6.0.1
+m_dns: 8.8.8.8
+
+## container backend
+b_ipaddr: 10.10.0.0
+b_netmask: 255.255.0.0
+b_cidr: 16
+b_gateway: 10.10.0.1
+b_dns: 8.8.8.8
+
+## max fp vports count = 255 - [ fp vports last ip value ] + 1
+## max fp vports routine = 127
+fp_vports: 10.4.0.2
+fp_vports_count: 30
+fp_vports_routine: 1
+
+## max lb vports count = 255 - [ lb vports last ip value ] + 1
+## max lb vports routine = 127
+lb_vports: 10.2.0.2
+lb_vports_count: 9
+lb_vports_routine: 1
+
+
+public:
+
+lb_public: 

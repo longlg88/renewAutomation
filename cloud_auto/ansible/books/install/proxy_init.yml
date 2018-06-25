@@ -1,0 +1,8 @@
+---
+- name: Package download for dhcpserver
+  hosts: '{{ hosts }}'
+  remote_user: '{{ user }}'
+  vars_files:
+    - "../../vars/external_vars.yml" 
+  roles:
+    - proxy_init

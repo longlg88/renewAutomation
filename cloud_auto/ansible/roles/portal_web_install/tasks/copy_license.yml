@@ -1,0 +1,5 @@
+---
+
+- name: Copy WebToB license
+  copy: src=../../../files/binary/webtob-license/license.dat dest={{ user_home.stdout }}/webtob/license/ mode=0644
+

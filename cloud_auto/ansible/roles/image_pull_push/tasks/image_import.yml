@@ -1,0 +1,14 @@
+---
+#### docker image import for service call
+
+- name: IMAGE_NAME_1  image importing Processing...
+  shell: 'sudo curl http://{{ master_ip }}:8080/imp/master/Image?action=Import -H "Content-Type: application/json" -X POST -d @{{ user_home.stdout }}/automation/image_import/{{ IMAGE_NAME_1 }}.json >> {{ user_home.stdout }}/automation/image_import/log'
+
+- name: IMAGE_NAME_2  image importing Processing...
+  shell: 'sudo curl http://{{ master_ip }}:8080/imp/master/Image?action=Import -H "Content-Type: application/json" -X POST -d @{{ user_home.stdout }}/automation/image_import/{{ IMAGE_NAME_2 }}.json >> {{ user_home.stdout }}/automation/image_import/log'
+
+- name: IMAGE_NAME_3  image importing Processing...
+  shell: 'sudo curl http://{{ master_ip }}:8080/imp/master/Image?action=Import -H "Content-Type: application/json" -X POST -d @{{ user_home.stdout }}/automation/image_import/{{ IMAGE_NAME_3 }}.json >> {{ user_home.stdout }}/automation/image_import/log'
+
+- name: IMAGE_NAME_4  image importing Processing...
+  shell: 'sudo curl http://{{ master_ip }}:8080/imp/master/Image?action=Import -H "Content-Type: application/json" -X POST -d @{{ user_home.stdout }}/automation/image_import/{{ IMAGE_NAME_4 }}.json >> {{ user_home.stdout }}/automation/image_import/log'

@@ -1,0 +1,19 @@
+---
+###########################################
+### tcnc_vars.yml use tcnc run ###########
+
+##
+
+TCNM_MAC_ADDR: "fe:c9:41:01:00:00"			## TCNM pseudomac address
+TCNM_IP_ADDR: ""							## NODE PUBLIC IP
+TCNC_IP_ADDR: ""							## NODE PUBLIC IP
+
+GW_MAC_ADDR: ""								## L3 gateway mac address(not host mac address)
+GW_IP_ADDR1: "192.168.60.1"					## PUBLIC IP GATEWAY
+GW_IP_ADDR2: "192.168.60.1"					## PUBLIC IP GATEWAY
+
+
+## SDN up link num & ports(port,port,port,...) for public communication
+
+UP_LINK_NUM: 1
+UP_LINK_PORTS: 25

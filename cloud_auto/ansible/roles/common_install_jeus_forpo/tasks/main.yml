@@ -1,0 +1,6 @@
+---
+#- include: init.yml
+#- include: copy_binary.yml
+- include: jeus_build.yml
+#- include: jeus_integration_build.yml
+#- include: profile.yml

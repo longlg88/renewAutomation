@@ -1,0 +1,10 @@
+---
+## Volume Manager vars
+# CSVMGR_IPADDR must be management IP
+CSVMGR_HOME: "{{ ansible_env.HOME }}/tibero6_csvmgr"
+CSVMGR_SID: csvmgr
+CSVMGR_IPADDR: 
+CSVMGR_PORT: 52000
+CSVMGR_META_DB_NAME: tibero
+CSVMGR_LOG_DIR: "$CSVMGR_HOME/instance/$CSVMGR_SID/log"
+CSVMGR_LOG_LEVEL: INFO

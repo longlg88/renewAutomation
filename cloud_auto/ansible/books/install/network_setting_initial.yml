@@ -1,0 +1,7 @@
+---
+- name: Host network initial setting
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+  roles:
+    - network_setting_initial

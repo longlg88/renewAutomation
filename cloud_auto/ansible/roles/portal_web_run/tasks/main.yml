@@ -1,0 +1,13 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }'"
+  register: user_home
+
+- name: untar webcontent
+  unarchive: src=../../../files/binary/WebContent.tar dest={{ user_home.stdout }}/webtob/docs
+
+- name: change ip
+  shell: "sed -i -e 's/175.195.163.15/{{ portal_ip  }}/g' {{ user_home.stdout }}/webtob/docs/cloud-portal/services.json"
+
+- name: Run webtob
+  shell: wsboot

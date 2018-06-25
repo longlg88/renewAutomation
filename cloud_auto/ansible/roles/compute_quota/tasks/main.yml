@@ -1,0 +1,29 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: deprecated
+  shell: "echo deprecated"
+#- name: copy subuid and subgid shell 
+#  copy: src=../../../files/compute_subgid_set.sh dest={{ user_home.stdout }}/automation/compute/ mode=0755
+#
+#- name: execute subgid shell
+#  shell: "sh {{ user_home.stdout }}/automation/compute/compute_subgid_set.sh" 
+
+#- name: grpquota add to fstab
+#  mount:
+#    path: "/"
+#    src: "UUID={{ item.uuid }}"
+#    fstype: "ext4"
+#    opts: "rw,relatime,grpquota,errors=remount-ro"
+#    state: "present"
+#  with_items:
+#    - "{{ ansible_mounts }}"
+#  when: "item.mount == '/'"
+
+#- name: copy quota set shell
+#  copy: src=../../../files/compute_quota_set.sh dest={{ user_home.stdout }}/automation/compute/ mode=0755
+#
+#- name: execute quota set shell
+#  shell: "sh {{ user_home.stdout }}/automation/compute/compute_quota_set.sh"

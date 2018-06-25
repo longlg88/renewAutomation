@@ -1,0 +1,6 @@
+---
+- name: copy download test shell script
+  copy: src=../../../files/test.sh dest=/{{ user }}/automation/initial/test.sh owner={{ user }} mode=0755
+
+- name: execute shell
+  shell: /{{ user }}/automation/initial/test.sh

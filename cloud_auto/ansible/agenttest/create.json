@@ -1,0 +1,11 @@
+{
+"dto" : {
+    "name" : "ItisagentTest",
+    "description" : "test",
+    "tags" : ["test", "Cloud"],
+    "specUuid" : "123d1a3a",
+    "instanceType" : "server",
+    "imageUuid" :  "1dd63571",
+    "setPublicIp" : false
+   }
+}

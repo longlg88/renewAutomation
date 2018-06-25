@@ -1,0 +1,54 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }'"
+  register: user_home
+
+- name: Setting smgr make user sql copy
+  copy: src=../../../files/gen_smgrmakeuser.sh dest={{ user_home.stdout }}/automation/db_files/ mode=0755
+
+- name: Setting smgr make user
+  shell: "{{ user_home.stdout }}/automation/db_files/gen_smgrmakeuser.sh"
+  become: true
+
+- name: Echo TB HOME
+  shell: "echo $TB_HOME"
+
+- name: Create sm7 event user
+  shell: "tbsql sys/tibero @{{ user_home.stdout }}/automation/db_files/sql_script/sm7event_makeuser.sql"
+  become: true
+
+- name: Create smgr user
+  shell: "tbsql sys/tibero @{{ user_home.stdout }}/automation/db_files/sql_script/smgr_makeuser.sql"
+  become: true
+
+- name: copy sm event table sql
+  copy: src=../../../files/sql_script/sm7_event_db_create_table.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/ mode=0755
+  become: true
+
+- name: copy smgr meta table sql
+  copy: src=../../../files/sql_script/smgr_create_table.sql dest={{ user_home.stdout }}/automation/db_files/sql_script/ mode=0755
+  become: true
+
+- name: Replace table space name
+  replace:
+    dest: "{{ user_home.stdout }}/automation/db_files/sql_script/smgr_create_table.sql"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@tablespace_name@', rep: '{{ tablespace_name }}' }
+
+- name: Replace table space name2
+  replace:
+    dest: "{{ user_home.stdout }}/automation/db_files/sql_script/sm7_event_db_create_table.sql"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@tablespace_name@', rep: '{{ tablespace_name }}' }
+
+- name: Insert sm event table
+  shell: "tbsql {{ SMEVENTID }}/{{ SMEVENTPW }} @{{ user_home.stdout }}/automation/db_files/sql_script/sm7_event_db_create_table.sql"
+  become: true
+
+- name: Insert smgr table
+  shell: "tbsql {{ SMGRID }}/{{ SMGRPW }} @{{ user_home.stdout }}/automation/db_files/sql_script/smgr_create_table.sql"
+  become: true

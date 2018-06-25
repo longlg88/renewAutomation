@@ -1,0 +1,22 @@
+{
+    "dto":{
+        "tenantUuid":"0739ec6d",
+        "tenantName":"CSP-tenant",
+        "projectUuid":"01bea881",
+        "projectName":"CSP-project",
+        "uploaderUuid":"0",
+        "uploaderName":"CSP-user",
+        "imageName":"@@IMAGE_NAME_3@@",
+        "imageTag":[{"text" : "@@das_tag@@"}],
+        "description":"this is jeus8_cloud_das image",
+        "imageType":"WAS",
+        "productName":"@@image_registry@@:5000/@@IMAGE_NAME_3@@",
+        "productVersion":"@@das_tag@@",
+        "shared":"Public",
+        "imageFrom":"Docker",
+        "supportOS":"LINUX",
+        "imageClassification":"Container",
+        "defaultCheck":"Y",
+        "serviceType":"2"
+    }
+}

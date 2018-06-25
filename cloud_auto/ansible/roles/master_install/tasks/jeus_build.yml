@@ -1,0 +1,353 @@
+---
+####Copy jeus_home bin######################################
+- name: make {{ jeus_home }} bin
+  file: path={{ jeus_home }}/bin state=directory
+
+- name: find install-bin
+  command: "find {{ jeus_home }}/setup/bin/unix -maxdepth 1 -type f"
+  register: setup_bin_copy
+
+- name: install-bin
+  copy:
+        src={{ item }}
+        dest={{ jeus_home }}/bin/
+        remote_src=true
+        directory_mode=yes
+        mode="u=rwx,g=rwx,o=rx"
+  with_items:
+    - "{{ setup_bin_copy.stdout_lines }}"
+#############################################################
+
+####Replace jeus.properties##################################
+- name: Replace jeus.properties
+  replace:
+    dest: "{{ jeus_home }}/bin/jeus.properties"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@JEUSDir@', rep: '{{ jeus_home }}' }
+    - { exp: '@JEUS_BASEPORT@', rep: '{{ jeus_port }}' }
+    - { exp: '@SW_LANG@', rep: '{{ jeus_lang }}' }
+    - { exp: '@JDKDir@', rep: '{{ java_home }}' }
+    - { exp: '@@BITZ@@', rep: '"{{ (bitz == "x64" and remote_os_arch != "AIX") | ternary("-d64 -Djeus.vm.bits=64 -Djeus.jms.server.manager.produce-wait-strategy-type=blocking", "") }}"' }
+    - { exp: '@VM_VENDOR@', rep: '{{ jvm_vendor }}' }
+    - { exp: '@@LIBRARYPATH@@', rep: 'LD_LIBRARY_PATH' }
+#############################################################
+
+####Create domain############################################
+- name: Make domain directory(domain name = {{ domain }})
+  file: path={{ domaindir }}/{{ item }} state=directory
+  when: not setup_bin_copy.stderr
+  with_items:
+    - [ '.applications', '.deploymentplans', 'bin', 'config', 'lib/application', 'servers']
+#############################################################
+
+####Copy config##############################################
+- name: Check config dir
+  stat: path={{ domaindir }}/config
+  register: domain_config_exists
+- name: Fail check config directory
+  fail:
+       msg: "Make fail {{ domain }}/config"
+  when: domain_config_exists.stat.exists == False
+
+- name: Make domain config directory
+  file: path={{ domaindir }}/config/{{ item }} state=directory
+  with_items:
+    - [ 'servlet', 'security/SYSTEM_DOMAIN' ]
+  when: domain_config_exists.stat.exists == True
+
+- name: domain config server-configtemplate.properties copy
+  copy:
+        src={{ jeus_home }}/setup/config/domain/server-config-template.properties
+        dest="{{ domaindir }}/config/server-config-template.properties"
+        remote_src=true
+        directory_mode=yes
+        mode="u=rwx,g=rwx,o=rx"
+  when: domain_config_exists.stat.exists == True
+
+- name: domain config domain.xml copy
+  copy:
+        src=../../../files/master-domain/domain.xml
+        dest="{{ domaindir }}/config/domain.xml"
+        mode="0774"
+  when: domain_config_exists.stat.exists == True
+
+#############################################################
+
+####Replace domain.xml#######################################
+- name: Replace domain.xml
+  replace:
+    dest: "{{ domaindir }}/config/domain.xml"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@ID@@', rep: '{{ ansible_date_time.epoch| int | random }}' }
+    - { exp: '@@PRODUCTIONMODE@@', rep: '{{ productionmode }}' }
+    - { exp: '@@HOSTNAME@@', rep: '{{ server_name }}' }
+    - { exp: '@@HOST_NAME@@', rep: '{{ ansible_hostname }}' }
+    - { exp: '@@COMMAND-OPTION@@', rep: '{{ jvm_config }}' }
+    - { exp: '@@SYSMANAGER-COMMAND-OPTION@@', rep: '{{ jvm_sysmanager_config }}' }
+    - { exp: '@@CDS-COMMAND-OPTION@@', rep: '{{ jvm_cds_config }}' }
+    - { exp: '@@BASE-PORT@@', rep: '{{ jeus_port }}' }
+    - { exp: '@@HTTP-PORT@@', rep: '{{ http_port }}' }
+    - { exp: '@@BASE-ADDRESS@@', rep: '0.0.0.0' }
+    - { exp: '@@SAMPLESDIR@@', rep: '{{ jeus_home}}/samples/' }
+    - { exp: '@@JMS-PORT@@', rep: '{{ jms_port }}' }
+    - { exp: '@@DOMAINDIR@@', rep: '{{ domaindir }}' }
+    - { exp: '@@HEARTBEAT-ADDRESS@@', rep: '{{ heartbeataddress }}' }
+    - { exp: '@@HEARTBEAT-PORT@@', rep: '{{ heartbeatport }}' }
+##  IaaS Master config Replace
+    - { exp: '@@PROOBJECT_SERVER_NAME@@', rep: '{{ po7_server_name }}' }
+    - { exp: '@@PO_BASE-PORT@@', rep: '{{ po_base_port }}' }
+    - { exp: '@@PO_HTTP-PORT@@', rep: '{{ po_http_port }}' }
+    - { exp: '@@PO_HOME@@', rep: '{{ po_home }}' }
+    - { exp: '@@PO7_RUNTIME_WAR@@', rep: '{{ po7_runtime_binary }}' }
+    - { exp: '@@DATA_SOURCE_ID@@', rep: '{{ iaas_data_source_id }}' }
+    - { exp: '@@DB_IP@@', rep: '{{ iaas_db_ip }}' }
+    - { exp: '@@DB_PORT@@', rep: '{{ iaas_db_port }}' }
+    - { exp: '@@DB_NAME@@', rep: '{{ iaas_db_name }}' }
+    - { exp: '@@DB_USER@@', rep: '{{ iaas_db_user }}' }
+    - { exp: '@@DB_PASSWD@@', rep: '{{ iaas_db_password }}' }
+## Sysmanager config Replace
+    - { exp: '@@PROOBJECT_SYSMANAGER_SERVER_NAME@@', rep: '{{ po7_sysmanager_server_name }}' }
+    - { exp: '@@PO_SYSMANAGER_BASE-PORT@@', rep: '{{ po_sysmanager_base_port }}' }
+    - { exp: '@@PO_SYSMANAGER_HTTP-PORT@@', rep: '{{ po_sysmanager_http_port }}' }
+    - { exp: '@@PO_SYSMANAGER_LISTEN-ADDRESS@@', rep: '{{ po_sysmanager_listen_address }}' }
+    - { exp: '@@PO_SYSMANAGER_JMS-PORT@@', rep: '{{ po_sysmanager_jms_port }}' }
+    - { exp: '@@SMGR_DATA_SOURCE_ID@@', rep: '{{ smgr_data_source_id }}' }
+    - { exp: '@@SMGR_EXPORT_NAME@@', rep: '{{ smgr_export_name }}' }
+    - { exp: '@@SMGR_DB_IP@@', rep: '{{ smgr_db_ip }}' }
+    - { exp: '@@SMGR_DB_PORT@@', rep: '{{ smgr_db_port }}' }
+    - { exp: '@@SMGR_DB_NAME@@', rep: '{{ smgr_db_name }}' }
+    - { exp: '@@SMGR_DB_USER@@', rep: '{{ smgr_db_user }}' }
+    - { exp: '@@SMGR_DB_PASSWD@@', rep: '{{ smgr_db_password }}' }
+
+    - { exp: '@@AUTH_DATA_SOURCE_ID@@', rep: '{{ auth_data_source_id }}' }
+    - { exp: '@@AUTH_EXPORT_NAME@@', rep: '{{ auth_export_name }}' }
+    - { exp: '@@AUTH_DB_USER@@', rep: '{{ auth_db_user }}' }
+    - { exp: '@@AUTH_DB_PASSWD@@', rep: '{{ auth_db_password }}' }
+
+    - { exp: '@@EVENTDB_DATA_SOURCE_ID@@', rep: '{{ eventDB_data_source_id }}' }
+    - { exp: '@@EVENTDB_EXPORT_NAME@@', rep: '{{ eventDB_export_name }}' }
+    - { exp: '@@EVENTDB_DB_USER@@', rep: '{{ eventDB_db_user }}' }
+    - { exp: '@@EVENTDB_DB_PASSWD@@', rep: '{{ eventDB_db_password }}' }
+
+    - { exp: '@@CMDB_DATA_SOURCE_ID@@', rep: '{{ cmdb_data_source_id }}' }
+    - { exp: '@@CMDB_EXPORT_NAME@@', rep: '{{ cmdb_export_name }}' }
+    - { exp: '@@CMDB_DB_USER@@', rep: '{{ cmdb_db_user }}' }
+    - { exp: '@@CMDB_DB_PASSWD@@', rep: '{{ cmdb_db_password }}' }
+
+    - { exp: '@@USER_DATA_SOURCE_ID@@', rep: '{{ user_data_source_id }}' }
+    - { exp: '@@USER_EXPORT_NAME@@', rep: '{{ user_export_name }}' }
+    - { exp: '@@USER_DB_USER@@', rep: '{{ user_db_user }}' }
+    - { exp: '@@USER_DB_PASSWD@@', rep: '{{ user_db_password }}' }
+
+## CDS config Replace
+    - { exp: '@@PROOBJECT_CDS_SERVER_NAME@@', rep: '{{ po7_cds_server_name }}' }
+    - { exp: '@@PO_CDS_BASE-PORT@@', rep: '{{ po_cds_base_port }}' }
+    - { exp: '@@PO_CDS_HTTP-PORT@@', rep: '{{ po_cds_http_port }}' }
+    - { exp: '@@PO_CDS_JMS-PORT@@', rep: '{{ po_cds_jms_port }}' }
+
+    - { exp: '@@CDS_DATA_SOURCE_ID@@', rep: '{{ cds_data_source_id }}' }
+    - { exp: '@@CDS_EXPORT_NAME@@', rep: '{{ cds_export_name }}' }
+    - { exp: '@@CDS_DB_IP@@', rep: '{{ cds_db_ip }}' }
+    - { exp: '@@CDS_DB_PORT@@', rep: '{{ cds_db_port }}' }
+    - { exp: '@@CDS_DB_NAME@@', rep: '{{ cds_db_name }}' }
+    - { exp: '@@CDS_DB_USER@@', rep: '{{ cds_db_user }}' }
+    - { exp: '@@CDS_DB_PASSWD@@', rep: '{{ cds_db_password }}' }
+    
+#############################################################
+
+####Copy config servlet #####################################
+- name: find domain config servlet
+  command: "find {{ jeus_home }}/setup/config/domain/servlet -maxdepth 1 -type f"
+  register: setup_config_servlet_copy
+  when: domain_config_exists.stat.exists == True
+
+- name: domain config servlet copy
+  copy:
+        src={{ item }}
+        dest={{ domaindir }}/config/servlet/
+        remote_src=true
+        directory_mode=yes
+        mode="u=rwx,g=rwx,o=rx"
+  when: domain_config_exists.stat.exists == True
+  with_items:
+    - "{{ setup_config_servlet_copy.stdout_lines }}"
+#############################################################
+
+####Copy config security#####################################
+- name: find domain config security
+  command: "find {{ jeus_home }}/setup/config/domain/security -maxdepth 1 -type f"
+  register: setup_config_security_copy
+  when: domain_config_exists.stat.exists == True
+
+- name: domain config security copy
+  copy:
+        src={{ item }}
+        dest={{ domaindir }}/config/security/
+        remote_src=true
+        directory_mode=yes
+        mode="u=rwx,g=rwx,o=rx"
+  when: domain_config_exists.stat.exists == True
+  with_items:
+    - "{{ setup_config_security_copy.stdout_lines }}"
+
+- name: find domain config security SYSTEM_DOMAIN
+  command: "find {{ jeus_home }}/setup/config/domain/security/SYSTEM_DOMAIN -maxdepth 1 -type f"
+  register: setup_config_security_systemdomain_copy
+  when: domain_config_exists.stat.exists == True
+
+- name: domain config security SYSTEM_DOMAIN copy
+  copy:
+        src={{ item }}
+        dest={{ domaindir }}/config/security/SYSTEM_DOMAIN/
+        remote_src=true
+        directory_mode=yes
+        mode="u=rwx,g=rwx,o=rx"
+  when: domain_config_exists.stat.exists == True
+  with_items:
+    - "{{ setup_config_security_systemdomain_copy.stdout_lines }}"
+#############################################################
+
+####Replace SYSTEM_DOMAIN accounts.xml policies.xml##########
+- name: Replace SYSTEM_DOMAIN/accounts.xml
+  replace:
+    dest: "{{ domaindir }}/config/security/SYSTEM_DOMAIN/accounts.xml"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@PASSWORD@@', rep: '{{ jeus_password }}' }
+    - { exp: '@@USERNAME@@', rep: '{{ jeus_username }}' }
+
+- name: Replace SYSTEM_DOMAIN/policies.xml
+  replace:
+    dest: "{{ domaindir }}/config/security/SYSTEM_DOMAIN/policies.xml"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@USERNAME@@', rep: '{{ jeus_username }}' }
+#############################################################
+
+####Create config servers####################################
+- name: Check servers dir
+  stat:
+        path={{ domaindir }}/servers
+  register: server_exists
+
+- name: Fail check server dir
+  fail:
+       msg: "Make fail {{ server_name }}"
+  when: server_exists.stat.exists == false
+
+- name: Make server directory(server name = {{ server_name }})
+  file: path={{ domaindir }}/servers/{{ server_name }}/{{ item }} state=directory
+  when: server_exists.stat.isdir is defined and server_exists.stat.isdir
+  with_items:
+    - [ 'bin', '.applications', '.workspace/deployed/deploymentplans', 'logs', 'lib/application' ]
+#############################################################
+
+####Copy domains bin#########################################
+- name: find domains bin
+  command: "find {{ jeus_home }}/setup/bin/DOMAINHOME_bin/unix -maxdepth 1 -type f"
+  register: setup_domain_bin_copy
+
+- name: domains bin
+  copy:
+        src={{ item }}
+        dest={{ domaindir }}/bin/
+        remote_src=true
+        directory_mode=yes
+        mode="u=rwx,g=rwx,o=rx"
+  with_items:
+    - "{{ setup_domain_bin_copy.stdout_lines }}"
+#############################################################
+
+####Replace domains bin######################################
+- name: Replace domains startDomainAdminServer
+  replace:
+    dest: "{{ domaindir }}/bin/startDomainAdminServer"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@domain_name@', rep: '{{ domain }}' }
+
+- name: Replace domains startManagedServer
+  replace:
+    dest: "{{ domaindir }}/bin/startManagedServer"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@domain_name@', rep: '{{ domain }}' }
+#############################################################
+
+####Copy and Replace nodes xml#########################################
+- name: copy domains nodes xml
+  copy:
+        src=../../../files/po7_install_set/nodes_{{ nodes_type }}.xml
+        dest={{ jeus_home }}/domains/nodes.xml
+        mode="0755"
+
+- name: Replace domains nodes xml
+  replace:
+    dest: "{{ jeus_home }}/domains/nodes.xml"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@HOSTNAME@@', rep: '{{ ansible_hostname  }}' }
+    - { exp: '@@JEUSHOME@@', rep: '{{ jeus_home }}' }
+    - { exp: '@@USERNAME@@', rep: '{{ ansible_user }}' }
+    - { exp: '@@USERHOME@@', rep: '{{ user_home.stdout }}' }
+#############################################################
+
+####Copy jarscan properties##################################
+- name: copy domains nodes xml
+  copy:
+        src={{ jeus_home }}/setup/{{ item }}
+        dest={{ jeus_home }}/domains/
+        remote_src=true
+        directory_mode=yes
+        mode="u=rwx,g=rwx,o=rx"
+  with_items:
+    - "jarscan.properties"
+#############################################################
+
+####Copy nativelib###########################################
+- name: find nativelib
+  command: "find {{ jeus_home }}/setup/lib_native/{{ source|replace('\n','') }} -maxdepth 1 -type f"
+  register: setup_nativelib_copy
+
+- name: domain nativelib copy
+  copy:
+        src={{ item }}
+        dest={{ jeus_home }}/lib/system/
+        remote_src=true
+        directory_mode=yes
+        mode="u=rwx,g=rwx,o=rx"
+  with_items:
+    - "{{ setup_nativelib_copy.stdout_lines }}"
+#############################################################
+
+###### mkdir .application ###########################
+- name: mkdir recursive .application directory
+  file: path={{ jeus_home }}/domains/{{ domain }}/.applications/po7b007 state=directory
+ 
+#- name: copy domains nodes xml
+#  copy:
+#        src=/{{ user_home }}/tmp/{{ po7_runtime_binary }}%%
+#        dest={{ domaindir }}/.applications/
+#        remote_src=true
+#        directory_mode=yes
+#        mode=0755
+
+#####################################################
+
+####### make jxt directory & copy jxt jar ###################
+- name: make jxt directory jext_v8000_i144108_a915551.jar 
+  file: path={{ jeus_home }}/lib/jext/ state=directory
+  when: jeus_version == "jeus8-b110.zip"
+
+- name: copy jxt jar
+  copy: src=../../../files/binary/jext_v8000_i144108_a915551.jar dest={{ jeus_home }}/lib/jext/ 
+  when: jeus_version == "jeus8-b110.zip"

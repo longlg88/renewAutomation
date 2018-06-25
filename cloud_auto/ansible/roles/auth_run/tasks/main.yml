@@ -1,0 +1,6 @@
+---
+- name: Setting auth server run shell
+  copy: src=../../../files/auth_server_run.sh dest=/{{ user }}/automation/auth/ owner={{ user }} mode=0755
+
+- name: Run auth server shell
+  shell: /{{ user }}/automation/auth/auth_server_run.sh

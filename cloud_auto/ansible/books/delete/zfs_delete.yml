@@ -1,0 +1,11 @@
+---
+
+- name: Delete zfs
+  hosts: '{{ hosts }}'
+  remote_user: '{{ user }}'
+  environment:
+    ZPOOL: '{{ zpool_name }}'
+  vars_files:
+    - "../../vars/external_vars.yml"
+  roles:
+    - zfs_delete

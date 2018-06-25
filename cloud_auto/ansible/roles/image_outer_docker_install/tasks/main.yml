@@ -1,0 +1,54 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }'"
+  register: user_home
+
+#### apt-get install docker setting
+#- name: Copy docker install shell on ubuntu
+#  copy: src=../../files/docker_install_ubuntu.sh dest={{ user_home.stdout }}/automation/initial/docker_install.sh mode=0755
+#  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Tmaxlinux" and aptInstall == "yes"
+
+#- name: Execute docker install shell <update & install docker>
+#  shell: "{{ user_home.stdout }}/automation/initial/docker_install.sh"
+#  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Tmaxlinux" and aptInstall == "yes"
+
+#### setting docker daemon.json
+- name: find docker daemon
+  shell: "grep -r 'insecure-registries' /etc/docker/"
+  register: find_docker
+  ignore_errors: True
+
+- name: Make docker daemon json
+  file: path=/etc/docker/daemon.json state=touch mode=0755
+  when: find_docker.rc == 1
+
+- name: Execute shell that insecure ip in daemon.json
+  shell: echo '{ "insecure-registries":["{{ image_registry }}:5000"], "storage-driver":"aufs" }' > /etc/docker/daemon.json
+  when: find_docker.rc == 1
+
+- name: service docker restart
+  service: name=docker state=restarted
+  when: find_docker.rc == 1
+
+#### setting image outer node
+- name: make directory image import
+  file: path={{ user_home.stdout }}/automation/image_import state=directory
+
+## docker pull registry
+- name: find docker registry container
+  shell: "docker container inspect private-registry"
+  register: find_reg_container
+  ignore_errors: True
+
+- name: docker pull registry
+  shell: "sudo docker pull registry:latest"
+  when: find_reg_container.rc == 1
+
+- name: docker run registry
+  shell: "sudo docker run --name private-registry -d -p 5000:5000 registry"
+  when: find_reg_container.rc == 1
+#  register: docker_run
+
+- name: Image pull push tasks
+  include_role:
+    name: image_pull_push

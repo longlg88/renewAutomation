@@ -1,0 +1,4 @@
+---
+- name: echo this host ip
+  shell: "echo {{ hosts.ip }}"
+  when: iaas == "

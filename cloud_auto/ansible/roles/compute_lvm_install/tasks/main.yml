@@ -1,0 +1,24 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: copy script for generate hdd.sh & write /etc/fstab
+  copy: src=../../../files/compute_lvm_create.sh dest={{ user_home.stdout }}/automation/ mode=0755
+
+- name: Replace com_lvm_size
+  replace:
+    dest: '{{ user_home.stdout }}/automation/compute_lvm_create.sh'
+    regexp: '{{ item.exp }}'
+    replace: '{{ item.rep }}'
+  with_items:
+    - { exp: '@@com_lvm_size@@', rep: '{{ com_lvm_size }}' }
+
+- name: generate hdd.sh & write /etc/fstab
+  shell: "{{ user_home.stdout }}/automation/compute_lvm_create.sh"
+
+- name: run hdd.sh
+  shell: "{{ user_home.stdout }}/automation/hdd.sh"
+
+#- name: reboot
+#  shell: reboot

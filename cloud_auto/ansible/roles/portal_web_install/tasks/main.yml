@@ -1,0 +1,7 @@
+---
+- include: init.yml
+- include: copy_binary.yml
+- include: profile.yml
+- include: install.yml
+- include: copy_license.yml
+- include: execute_httpm.yml

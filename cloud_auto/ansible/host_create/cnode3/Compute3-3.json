@@ -1,0 +1,24 @@
+{
+    "dto":{
+        "hostName":"Compute3-3",
+        "hostIp":"172.31.3.3",
+        "totalCpu":16,
+        "totalMemory":32000,
+        "totalDisk":300,
+        "pooledDisk":300,
+        "hostType":"General",
+        "hypervisorType":"LXC",
+        "cpuArch":"x86_64",
+        "availabilityZone":"",
+        "status":"Running",
+        "hostPmac":"fe:a7:c1:07",
+        "frontendPort":"eno1",
+        "backendPort":"eno1",
+        "managementPort":"eno1",
+        "switchDpid":2038033768499423169,
+        "switchPort":7,
+        "accessName":"root",
+        "accessAuth":"tmax@23",
+        "active":true
+    }
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<nodeManager xmlns="http://www.tmaxsoft.com/xml/ns/jeus">
+    <useNodeManager>true</useNodeManager>
+    <host>localhost</host>
+    <port>@@totalmaster_nodemanager_port@@</port>
+    <serverMonitoringPeriod>500</serverMonitoringPeriod>
+    <serverAutoRestart>true</serverAutoRestart>
+    <serverRestartTryCount>5</serverRestartTryCount>
+    <serverRestartDurationTime>120000</serverRestartDurationTime>
+    <serverRetryRestart>false</serverRetryRestart>
+    <useSSLListener>false</useSSLListener>
+    <processList>
+    </processList>
+</nodeManager>

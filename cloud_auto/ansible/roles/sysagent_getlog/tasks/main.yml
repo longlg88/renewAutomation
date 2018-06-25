@@ -1,0 +1,7 @@
+---
+- name: fetch get log  
+  fetch: src=/{{ user }}/sys_agent/log dest=/{{ user }}/automation/
+
+- name: fetch get core
+  fetch: src=/{{ user }}/core dest=/{{ user }}/automation/
+  

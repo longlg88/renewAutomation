@@ -1,0 +1,8 @@
+---
+- name: Install NFTables program 
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+
+  roles:
+    - nft_install

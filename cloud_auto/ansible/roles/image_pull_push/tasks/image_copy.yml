@@ -1,0 +1,17 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+#### image copy (default image, das, ms, tcs ssvr, tcs tibero)
+- name: image copy tcs ssvr
+  copy: src=../../../files/binary/{{ IMAGE_NAME_1 }}_{{ ssvr_tag }}.tar.gz dest={{ user_home.stdout }}/automation/image_import/ mode=0755
+
+- name: image copy tcs tibero
+  copy: src=../../../files/binary/{{ IMAGE_NAME_2 }}_{{ tibero_tag }}.tar.gz dest={{ user_home.stdout }}/automation/image_import/ mode=0755
+
+- name: image copy jeus das
+  copy: src=../../../files/binary/{{ IMAGE_NAME_3 }}_{{ das_tag }}.tar.gz dest={{ user_home.stdout }}/automation/image_import/ mode=0755
+
+- name: image copy jeus ms
+  copy: src=../../../files/binary/{{ IMAGE_NAME_4 }}_{{ ms_tag }}.tar.gz dest={{ user_home.stdout }}/automation/image_import/ mode=0755

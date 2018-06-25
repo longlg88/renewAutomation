@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# init script for image scp node.
+# by jungsub_shin
+
+### BEGIN INIT INFO
+# Provides:          tca-image-scp
+# Required-Start:
+# Required-Stop:
+# Default-Start:	 2 3 4 5
+# Default-Stop:      0 1 6
+### END INIT INFO
+
+# Directories
+tca_agent_block_home=@@user_home@@/tca_agent
+tca_agent_mem_home=/tmp/tca_agent
+
+tca_scp_storage_lock=$tca_agent_mem_home/scp_storage_lock;
+tca_scp_storage_tar=$tca_agent_block_home/scp_storage_tar;
+tca_scp_storage_dir=$tca_agent_block_home/scp_storage_dir;
+
+# Functions
+init_directories () {
+	mkdir -p $tca_scp_storage_lock
+	mkdir -p $tca_scp_storage_tar
+	mkdir -p $tca_scp_storage_dir
+}
+
+# Run
+case "$1" in
+  start)
+	init_directories
+	;;
+  restart|reload|force-reload)
+	echo "Error: argument '$1' not supported" >&2
+	echo "Usage: $0 [start|stop]" >&2
+	exit 3
+	;;
+  stop|"")
+	;;
+  *)
+	echo "Usage: $0 [start|stop]" >&2
+	exit 3
+	;;
+esac
+
+:

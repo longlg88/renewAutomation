@@ -1,0 +1,21 @@
+---
+- name: Init ansible home
+  hosts: '{{ hosts }}'
+
+- name: Install Tibero6 with manual
+  hosts: '{{ hosts }}'
+  environment:
+    TB_HOME: '{{ tb_home }}'
+    TB_SID: '{{ tb_sid }}'
+    PATH: "{{ tb_home }}/bin:{{ tb_home }}/client/bin:{{ ansi_path }}"
+    LD_LIBRARY_PATH: "{{ tb_home }}/lib:{{ tb_home }}/client/lib"
+    SMGRID: '{{ smgr_db_user }}'
+    SMGRPW: '{{ smgr_db_password }}'
+    SMEVENTID: '{{ eventDB_db_user }}'
+    SMEVENTPW: '{{ eventDB_db_password }}'
+    tablespace_name: '{{ tablespace_name }}'
+  vars_files:
+    - "../../vars/db_config.yml"
+
+  roles:
+    - dbmanual_sysmanager_run

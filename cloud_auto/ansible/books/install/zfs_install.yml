@@ -1,0 +1,14 @@
+---
+
+- name: Setting Storage
+  hosts: '{{ hosts }}'
+  environment:
+    ZPOOL: '{{ zpool_name }}'
+    VOLUME1: '{{ volume1 }}'
+    VOLUME2: '{{ volume2 }}'
+    VOLUME3: '{{ volume3 }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+
+  roles:
+    - zfs_install

@@ -1,0 +1,9 @@
+---
+
+- name: Setting storage
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+
+  roles:
+    - storage_init

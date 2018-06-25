@@ -1,0 +1,7 @@
+---
+- name: Setting compute, storage host network
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+  roles:
+    - network_setting_ch_sh

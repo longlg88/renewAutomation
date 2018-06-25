@@ -1,0 +1,47 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }'"
+  register: user_home
+  become: true
+
+- name: mkdir insert directory
+  file: path={{ user_home.stdout }}/automation/db_files/sql_script/{{ item }}  state=directory
+  with_items:
+    - insert
+  become: true
+
+- name: copy insert sql to insert directory
+  copy: src=../../../files/sql_script/insert/ dest={{ user_home.stdout }}/automation/db_files/sql_script/insert/ mode=0755
+  become: true
+
+- name: insert hostinfo sql
+  shell: "tbsql {{ iaas_db_user }}/{{ iaas_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/insert/insert_host.sql"
+  become: true
+
+- name: insert pportinfo sql
+  shell: "tbsql {{ iaas_db_user }}/{{ iaas_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/insert/insert_pport.sql"
+  become: true
+
+- name: insert network sql
+  shell: "tbsql {{ iaas_db_user }}/{{ iaas_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/insert/insert_network.sql"
+  become: true
+
+- name: insert subnet sql
+  shell: "tbsql {{ iaas_db_user }}/{{ iaas_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/insert/insert_subnet.sql"
+  become: true
+
+- name: insert vport sql
+  shell: "tbsql {{ iaas_db_user }}/{{ iaas_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/insert/insert_vport.sql"
+  become: true
+
+- name: insert lb vport sql
+  shell: "tbsql {{ iaas_db_user }}/{{ iaas_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/insert/insert_lb_vport.sql"
+  become: true
+
+- name: insert publicip sql
+  shell: "tbsql {{ iaas_db_user }}/{{ iaas_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/insert/insert_public.sql"
+  become: true
+
+- name: insert lb publicip sql
+  shell: "tbsql {{ iaas_db_user }}/{{ iaas_db_password }} @{{ user_home.stdout }}/automation/db_files/sql_script/insert/insert_lb_public.sql"
+  become: true

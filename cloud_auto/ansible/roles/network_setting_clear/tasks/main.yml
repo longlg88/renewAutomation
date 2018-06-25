@@ -1,0 +1,15 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+- name: Backup sdn interfaces
+  shell: "cp /etc/network/interfaces /etc/network/interfaces_sdn"
+
+- name: Move interfaces file
+  shell: "mv {{ user_home.stdout }}/interfaces* /etc/network/interfaces"
+  when: IAAS_VERSION == "IAAS"
+
+- name: Execute setting shell
+  shell: "{{ user_home.stdout }}/net_down.sh"
+  when: IAAS_VERSION == "IAAS"

@@ -1,0 +1,107 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import json
+import paramiko
+from optparse import OptionParser
+from gen_host_info import host_main
+from gen_host_info import pport_main
+from gen_network_info import network_main
+from gen_network_info import subnet_main
+from gen_network_info import vport_main
+
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+from glogger import Logger
+
+sys.path.insert(0,'../')
+import host
+
+## FOR SDN
+ADDITIONAL_HOST_INFO="../config/host_info_additional"
+HOST_INFO="../config/host_info"
+
+## FOR LITE
+ADDITIONAL_HOST_INFO_LITE="../config/host_info_additional_lite"
+HOST_INFO_LITE="../config/host_info_lite"
+
+if __name__ == "__main__":
+	if(len(sys.argv) <= 1):
+		print("./infra_setting -h or --help will be helpful")
+		sys.exit()
+	use = """Usage: ./%prog [options] [IaaS version] [options] [infra]
+       ./%prog -v [IaaS version] -n [infra]
+		"""
+	parser = OptionParser(usage=use)
+
+	help_info = """Infra setting for IaaS version
+	[IaaS version] = SDN / lite
+	[infra] = host / subnet / vport / publicip
+	"""
+	parser.add_option("-v","--version",dest="version", default=False, action="store_true", help="Infra setting for Prozone version ex) SDN / lite")
+	parser.add_option("-n","--name",dest="name",default=False, action="store_true", help="Infra setting for infra name ex) host/subnet/vports/publicip")
+
+	options, args = parser.parse_args()
+	ssh = paramiko.SSHClient()
+	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+	logger = Logger()
+
+	if options.version:
+		if options.name:
+			if(args[1] == "host"):
+				if(args[0] != "SDN" and args[0] != "lite"):
+					logger.error("Wrong version you input. This would be helpful..! \n./infra_setting -h or --help")
+				else:
+					while True:
+						print("===========================================================")
+						print("|        Make host json(Master, Compute, Storage)         |")
+						print("===========================================================")
+						print(" press r to start or retry")
+						print(" press q to quit")
+						_input=input()
+						if(_input == 'r'):
+							try:
+								resource_mul=input("Enter cpu & memory multiple = ")
+								hostid=input("Enter hostid = ")
+								try:
+									if(args[0] == "SDN"):
+										if(os.path.exists(ADDITIONAL_HOST_INFO)):
+											host_main(ADDITIONAL_HOST_INFO, ssh, resource_mul,hostid)
+											#pport_main(ADDITIONAL_HOST_INFO, ssh)
+										elif(os.path.exists(HOST_INFO)):
+											## cpu & memory multiple ex)2,4,...
+											host_main(HOST_INFO, ssh, resource_mul,hostid)
+											#pport_main(HOST_INFO, ssh)
+										else:
+											logger.error("There is no host_info or host_info_additional")
+									elif(args[0] == "lite"):
+										if(os.path.exists(ADDITIONAL_HOST_INFO_LITE)):
+											host_main(ADDITIONAL_HOST_INFO_LITE, ssh, resource_mul)
+											#pport_main(ADDITIONAL_HOST_INFO_LITE, ssh)
+										elif(os.path.exists(HOST_INFO_LITE)):
+											host_main(HOST_INFO_LITE, ssh, resource_mul)
+											#pport_main(HOST_INFO_LITE, ssh)
+										else:
+											logger.error("There is no host_info_lite or host_info_additional_lite")
+									else:
+										logger.error("Wrong version you input. This would be helpful..! \n./infra_setting -h or --help")
+								except ValueError:
+									logger.error("There is no cpu & memory multiple argument.. please enter")
+							except KeyboardInterrupt:
+								logger.error("\nKeyboard interrrupt... please re-execute program")
+								sys.exit()
+						elif(_input == 'q'):
+							sys.exit()
+			elif(args[1] == "network"):
+					network_main()
+			elif(args[1] == "subnet"):
+					subnet_main()
+			elif(args[1] == "vport"):
+					vport_main()
+
+			else:
+				logger.info("Wrong infra name. This would be helpful..! \n./infra_setting -h or --help")
+		else:
+			logger.info("There is no infra name. This would be helpful..! \n./infra_setting -h or --help")
+	else:
+		logger.info("There is no version. This would be helpful..! \n./infra_setting -h or --help")

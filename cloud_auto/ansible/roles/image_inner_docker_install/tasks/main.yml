@@ -1,0 +1,50 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }'"
+  register: user_home
+
+# install docker
+#- name: Copy docker install shell on ubuntu
+#  copy: src=../../../files/docker_install_ubuntu.sh dest={{ user_home.stdout }}/automation/initial/docker_install.sh mode=0755
+#  when: ansible_distribution == "Ubuntu" or ansible_distribution == "TmaxLinux""
+#  become: true
+
+#- name: Execute docker install shell <update & install docker>
+#  shell: "{{ user_home.stdout }}/automation/initial/docker_install.sh 2>&1 | tee {{ user_home.stdout }}/automation/log/progress"
+#  when: ansible_distribution == "Ubuntu" or ansible_distribution == "TmaxLinux"" and aptInstall == "yes"
+#  become: true
+
+# setting docker daemon json
+- name: Make docker daemon json
+  file: path=/etc/docker/daemon.json state=touch mode=0755
+  become: true
+
+- name: Execute shell that insecure ip in daemon.json
+  shell: echo '{ "insecure-registries":["{{ image_registry }}:5000"], "storage-driver":"aufs" }' > /etc/docker/daemon.json
+  become: true
+
+- name: service docker restart
+  service: name=docker state=restarted
+  become: true
+
+# setting modified docker binaries
+- name: Make docker binary directory
+  file: path={{ user_home.stdout }}/automation/initial/{{ item }} state=directory
+  with_items:
+    - docker_binary
+  become: true
+
+- name: Copy modified docker binaries
+  copy: src=../../../files/binary/docker_binary.tar dest={{ user_home.stdout }}/automation/initial/docker_binary.tar mode=0755
+  when: ansible_distribution == "Ubuntu" or ansible_distribution == "TmaxLinux"
+  become: true
+
+- name: Copy unarchive_setting.sh
+  copy: src=../../../files/unarchive_setting.sh dest={{ user_home.stdout }}/automation/initial mode=0755
+  when: ansible_distribution == "Ubuntu" or ansible_distribution == "TmaxLinux"
+  become: true
+
+- name: Unarchive docker binary tar & modify
+  shell: "{{ user_home.stdout }}/automation/initial/unarchive_setting.sh 2>&1 >> {{ user_home.stdout }}/automation/log/progress"
+  when: ansible_distribution == "Ubuntu" or ansible_distribution == "TmaxLinux"
+  become: true

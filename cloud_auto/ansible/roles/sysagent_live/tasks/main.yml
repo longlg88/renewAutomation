@@ -1,0 +1,13 @@
+---
+- name: Find my hoome
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+#- name: copy agent live shell
+#  copy: src=../../../files/live.sh dest=/{{ user }}/sys_agent/live.sh owner={{ user }} mode=0755
+
+#- name: execute shell
+#  shell: /{{ user }}/sys_agent/live.sh
+
+#- name: fetch live
+#  fetch: src=/{{ user }}/sys_agent/live dest=/{{ user }}/automation/

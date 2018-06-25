@@ -1,0 +1,9 @@
+---
+
+- name: Setting quota for compute node
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+
+  roles:
+    - compute_quota

@@ -1,0 +1,31 @@
+---
+- name: Init ansible home
+  hosts: '{{ hosts }}'
+
+- name: RUN Tibero6 with manual
+  hosts: '{{ hosts }}'
+  environment:
+    TB_HOME: '{{ tb_home }}'
+    TB_SID: '{{ tb_sid }}'
+    PATH: "{{ tb_home }}/bin:{{ tb_home }}/client/bin:{{ ansi_path }}"
+    LD_LIBRARY_PATH: "{{ tb_home }}/lib:{{ tb_home }}/client/lib"
+    TID: '{{ iaas_db_user }}'
+    TPW: '{{ iaas_db_password }}'
+    PORTALTID: '{{ user_db_user }}'
+    PORTALTPW: '{{ user_db_password }}'
+    CMDBTID: '{{ cmdb_db_user }}'
+    CMDBTPW: '{{ cmdb_db_password }}'
+    AUTHTID: '{{ auth_db_user }}'
+    AUTHTPW: '{{ auth_db_password }}' 
+    TCNMTID: '{{ tcnm_db_user }}'
+    TCNMTPW: '{{ tcnm_db_password }}'
+    NFVTID: '{{ nft_db_user }}'
+    NFVTPW: '{{ nft_db_password }}'
+    CDSTID: '{{ cds_db_user }}'
+    CDSPW: '{{ cds_db_password }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+    - "../../vars/db_config.yml"
+
+  roles:
+    - dbmanual_run

@@ -1,0 +1,56 @@
+---
+# Default option values. You can input your options.
+domain: "master"
+domaindir: "{{ jeus_home }}/domains/{{ domain }}"
+productionmode: "true"
+server_name: "adminServer"
+jvm_config: "-Xmx8192m -XX:MaxMetaspaceSize=8192m -Xdebug -Xrunjdwp:transport=dt_socket,address=9018,server=y,suspend=n -DPROOBJECT_HOME={{ ansible_env.HOME }}/po7/IaaSMaster"
+jvm_sysmanager_config: "-Xmx4096m -XX:MaxMetaspaceSize=1024m -DPROOBJECT_HOME={{ ansible_env.HOME }}/po7/SysManagerMaster"
+jvm_cds_config: "-Xmx1024m -XX:MaxMetaspaceSize=128m -Xdebug -Xrunjdwp:transport=dt_socket,address=9028,server=y,suspend=n -DPROOBJECT_HOME={{ ansible_env.HOME }}/po7/CDSMaster"
+#jvm_tcnm_config: "-Xmx1024m -XX:MaxPermSize=128m -Xdebug -Xrunjdwp:transport=dt_socket,address=9008,server=y,suspend=n -DPROOBJECT_HOME={{ ansible_env.HOME }}/proobject7"
+#jvm_nft_config: "-Xmx1024m -XX:MaxMetaspaceSize=128m -DPROOBJECT_HOME={{ ansible_env.HOME }}/po7/TCNMMaster"
+jeus_port: "9736"
+jms_port: "9741"
+http_port: "8088"
+usevirtualmulticast: false
+heartbeataddress: "224.0.0.1"
+heartbeatport: "12488"
+# password's plain text is jeus.
+# If you want to set encrypted password, change it by set-password command with algorithm option in jeusadmin
+jeus_password: "{base64}{{ 'jeus' | b64encode }}"
+jeus_username: "jeus"
+jeus_password_cmd: "jeus"
+# Node configuration
+nodename: "node1"
+# Other configuration
+jeus_lang: "ko"
+jvm_vendor: "Sun"
+
+# PO7 Server Config
+po7_server_name: "IaaS"
+po_base_port: "14736"
+po_http_port: "8080"
+
+po7_sysmanager_server_name: "Sysmanager"
+po_sysmanager_base_port: "24736"
+po_sysmanager_http_port: "9080"
+po_sysmanager_listen_address: ""	##IP using in Sysmanager
+po_sysmanager_jms_port: "24937"
+
+#po7_tcnm_server_name: "TCNM"
+#po_tcnm_base_port: "19736"
+#po_tcnm_http_port: "8080"
+#po_tcnm_jms_port: "19741"
+
+#po7_nft_server_name: "TCNM"
+#po7_nft_base_port: "19736"
+#po7_nft_http_port: "8580"
+
+po7_cds_server_name: "CDS"
+po_cds_base_port: ""
+po_cds_http_port: ""
+po_cds_jms_port: ""
+
+totalmaster_nodemanager_port: "7731"
+
+# DB config -> using db_config.yml

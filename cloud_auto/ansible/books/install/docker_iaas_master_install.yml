@@ -1,0 +1,10 @@
+---
+- name: Install iaas master using Docker
+  hosts: '{{ hosts }}'
+  remote_user: '{{ user }}'
+  vars_files:
+    - "../../vars/po7_vars.yml"
+    - "../../vars/iaas_domain-config.yml"
+  
+  roles:
+    - docker_iaas_master_install

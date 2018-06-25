@@ -1,0 +1,4 @@
+---
+
+- name: execute sys_agent_run.sh
+  shell: "{{ user_home.stdout }}/sys_agent/sysmgr_agent_run.sh"

@@ -1,0 +1,77 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }' | head -1"
+  register: user_home
+
+
+- name: print hostname
+  shell: "echo {{ "
+#- name: process kill sysmanager agent
+#  shell: "pkill sysmgr-agent"
+
+#- name: remove sysmanager agent
+#  shell: "rm -f {{ user_home.stdout }}/sys_agent/sysmgr-agent"
+#  become: true
+
+#- name: copy external files
+#  copy: src=../../../../../sysmanager_deploy/sysmanageragent dest={{ user_home.stdout }}/sys_agent/ mode=0755
+
+#- name: copy deploy files
+#  copy: src=../../../../../sysmanager_deploy/sysmgr-agent dest={{ user_home.stdout }}/sys_agent/ mode=0755
+#  become: true
+
+#- name: execute sys_agent_run.sh
+#  shell: "{{ user_home.stdout }}/sys_agent/sys_agent_run.sh"
+
+#- name: execute sys_agent_backup.sh
+#  shell: "{{ user_home.stdout }}/sys_agent/sys_agent_backup.sh > {{ user_home.stdout }}/sys_agent/execute_log"
+
+#- name: copy publishing shell
+#  copy: src=../../../files/publishing.sh dest={{ user_home.stdout }} mode=0755
+
+#- name: execute publishing shell
+#  shell: "{{ user_home.stdout }}/publishing.sh"
+
+### ================== tca-compute replacing =====================
+#- name: copy tca-new
+#  copy: src=../../../files/tca-compute-new dest=/etc/init.d/tca-compute mode=0755
+
+#- name: execute cs_host_setting.sh
+#  shell: "{{ user_home.stdout }}/automation/compute/cs_host_setting.sh"
+
+### ================== crash core file setting ===================
+#- name: Make .config directory
+#  file: path={{ user_home.stdout }}/.config state=directory
+
+#- name: Make .config/apport directory
+#  file: path={{ user_home.stdout }}/.config/apport state=directory
+
+#- name: Copy file settings
+#  copy: src=../../../files/crash_core_settings dest={{ user_home.stdout }}/.config/apport/settings mode=0755
+
+
+### ================== find os version ==========================
+#- name: find os version
+#  shell: cat /etc/issue.net
+##  register: etc_issue
+#  debug:
+#    msg: "{{ etc_issue.stdout_lines }}"
+#
+
+
+
+
+
+
+### ================== find mac address ==========================
+
+#- name: find mac address
+#  debug:
+#    msg: "{{ ansible_interfaces | difference(['lo']) | map('regex_replace', '^(.*)$', 'ansible_\\1' ) | map('extract', hostvars[inventory_hostname], 'macaddress')  | list }}"
+
+#- name: print ansible_interfaces
+#  debug:
+#    msg: "{{ ansible_interfaces | intersect(['eno2']) | map('regex_replace', '^(.*)$', 'ansible_\\1' ) | map('extract', hostvars[inventory_hostname],'macaddress')  | list }}"
+
+#- name: make file for getting macaddress
+#  shell: "echo {{ ansible_interfaces | intersect(['eno2']) | map('regex_replace', '^(.*)$', 'ansible_\\1' ) | map('extract', hostvars[inventory_hostname],'macaddress')  | list }} >> /root/test_mac"

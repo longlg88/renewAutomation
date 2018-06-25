@@ -1,0 +1,8 @@
+---
+
+- name: Run sysmanager agent
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+  roles:
+    - sysagent_run

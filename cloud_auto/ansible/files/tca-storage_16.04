@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# init script for storage node.
+# by jungsub_shin
+
+### BEGIN INIT INFO
+# Provides:          tca-storage
+# Required-Start:	 zfs-share nfs-kernel-server
+# Required-Stop:     zfs-share nfs-kernel-server
+# Default-Start:	 2 3 4 5
+# Default-Stop:      0 1 6
+### END INIT INFO
+
+# Directories
+tca_agent_block_home=/root/tca_agent
+tca_zfs_mount=$tca_agent_block_home/zfs_mount
+
+# Functions
+init_directories () {
+	mkdir -p $tca_zfs_mount
+}
+
+init_nfs () {
+	echo "$tca_zfs_mount *(rw,fsid=0,no_root_squash,insecure,no_subtree_check,async)" > /etc/exports
+	exportfs -ra
+}
+
+init_zfs () {
+	zfs unshare -a # Before share -a, unshare -a must be executed.
+	zfs share -a
+}
+
+# Run
+case "$1" in
+  start)
+	init_directories
+	init_nfs
+	init_zfs # init zfs must be started befor init nfs.
+	;;
+  restart|reload|force-reload)
+	echo "Error: argument '$1' not supported" >&2
+	exit 3
+	;;
+  stop|"")
+	;;
+  *)
+	echo "Usage: tca-agent [start|stop]" >&2
+	exit 3
+	;;
+esac
+
+:

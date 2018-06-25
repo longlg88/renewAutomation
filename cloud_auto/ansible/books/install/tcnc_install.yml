@@ -1,0 +1,12 @@
+---
+- name: Init ansible home
+  hosts: '{{ hosts }}'
+
+- name: Install tcnc
+  hosts: '{{ hosts }}'
+  vars_files:
+    - "../../vars/common_vars.yml"
+    - "../../vars/tcnc_vars.yml"
+
+  roles:
+    - tcnc_install

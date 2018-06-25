@@ -1,0 +1,18 @@
+---
+- name: Make directory for copy tibero
+  file: path={{ user_home.stdout }}/{{ item }} state=directory
+  with_items:
+    - temp_tibero
+  become: true
+
+- name: Check tibero tar file is exist
+  stat: path={{ tb_csvmgr_binary_path }}
+  register: tibero_tar_exists
+  become: true
+
+- name: gtar tibero
+  unarchive: 
+    src={{ tb_csvmgr_binary_path }}
+    dest={{ user_home.stdout }}/temp_tibero/
+  when: "tibero_tar_exists.stat.exists == False"
+  become: true

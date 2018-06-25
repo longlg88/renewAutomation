@@ -1,0 +1,19 @@
+---
+- name: Image pull push in outer node
+  hosts: '{{ hosts }}'
+  environment:
+    IMAGE_NAME_1: '{{ IMAGE_NAME_1 }}'
+    IMAGE_NAME_2: '{{ IMAGE_NAME_2 }}'
+    IMAGE_NAME_3: '{{ IMAGE_NAME_3 }}'
+    IMAGE_NAME_4: '{{ IMAGE_NAME_4 }}'
+    master_ip: '{{ master_ip }}'
+    das_tag: '{{ das_tag }}'
+    ms_tag: '{{ ms_tag }}'
+    ssvr_tag: '{{ ssvr_tag }}'
+    tibero_tag: '{{ tibero_tag }}'
+    user_home: '{{ user_home.stdout }}'
+
+  vars_files:
+    - "../../vars/common_vars.yml"
+  roles:
+    - image_pull_push

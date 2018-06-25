@@ -1,0 +1,56 @@
+---
+- name: Find my home
+  shell: "grep '{{ ansible_user }}:' /etc/passwd | awk -F: '{ print $6 }'"
+  register: user_home
+
+- name: Make image gateway directory
+  file: path={{ user_home.stdout }}/automation/{{ item }} state=directory
+  with_items:
+    - im_gateway
+
+- name: Copy lxc install shell
+  copy: src=../../../files/image_gateway_install.sh dest={{ user_home.stdout }}/automation/im_gateway/ mode=0755
+  when: ansible_distribution == "Ubuntu" and aptInstall == "yes"
+
+- name: install lxc
+  shell: "nohup {{ user_home.stdout }}/automation/im_gateway/image_gateway_install.sh"
+  when: ansible_distribution == "Ubuntu" and aptInstall == "yes"
+
+- name: copy tca-compute file
+  copy: src=../../../files/tca-image-gateway dest=/etc/init.d/tca-image-gateway
+
+- name: Setting tca image gateway file
+  replace:
+    dest: "/etc/init.d/tca-image-gateway"
+    regexp: "{{ item.exp }}"
+    replace: "{{ item.rep }}"
+  with_items:
+    - { exp: '@@user_home@@', rep: '{{ user_home.stdout }}' }
+
+- name: Copy setting shell
+  copy: src=../../../files/image_gateway_setting.sh dest={{ user_home.stdout }}/automation/im_gateway/ mode=0755
+
+- name: Setting shell
+  shell: "nohup {{ user_home.stdout }}/automation/im_gateway/image_gateway_setting.sh"
+
+- name: Make Image gateway directory
+  file: path=/var/lib/docker/tmp/image_layer_docker state=directory
+
+- name: Make Image gate & node
+  file: path={{ user_home.stdout }}/{{ item }} state=directory
+  with_items:
+    - tca_agent
+
+- name: Make Image gate & node cont.
+  file: path={{ user_home.stdout }}/tca_agent/{{ item }} state=directory
+  with_items:
+    - import_tar
+    - scp_storage_ref
+    - scp_storage_tar
+
+
+- name: Make directory /var/lib/docker/imp_image_layer
+  file: path=/var/lib/docker/imp_image_layer/ state=directory
+
+- name: symbolic link to image_layer_docker
+  shell: "ln -s /var/lib/docker/imp_image_layer {{ user_home.stdout }}/tca_agent/image_layer_docker"
